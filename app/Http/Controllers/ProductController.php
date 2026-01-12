@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Product\ProductStoreRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -12,11 +13,12 @@ class ProductController extends Controller
         return Product::all();
     }
 
-    public function store(Request $request)
+    public function store(ProductStoreRequest $product)
     {
-        if ($request->all()) {
-            $product = Product::create($request->all());
-            return response()->json($product, 201);
+        return $product->all();
+        if ($product->all()) {
+
+            return response()->json(201);
         }
     }
 }

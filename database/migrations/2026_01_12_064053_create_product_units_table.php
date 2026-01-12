@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('product_units', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug');
             $table->boolean('is_base_unit')->default(false);
-            $table->integer('conversion_to_base_unit')->default(1);
+            $table->integer('conversion_factor')->default(1);
             $table->timestamps();
         });
     }

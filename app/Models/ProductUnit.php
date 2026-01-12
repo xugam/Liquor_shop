@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\SlugTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductUnit extends Model
 {
+    use SlugTrait;
     protected $fillable = [
         'name',
-        'conversion_to_base_unit',
+        'conversion_factor',
+        'slug',
         'is_base_unit'
     ];
     public function products()
