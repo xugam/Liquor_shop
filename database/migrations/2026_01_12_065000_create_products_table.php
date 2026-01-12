@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('slug');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->integer('price');
-            $table->integer('stock')->default(1);
             $table->integer('volume_ml')->nullable();
 
             //Foreign keys

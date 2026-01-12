@@ -20,9 +20,7 @@ class Product extends Model implements HasMedia
         'status',
         'base_unit_id',
         'volume_ml',
-        'stock',
         'sku'
-
     ];
 
     public function registerMediaCollections(): void

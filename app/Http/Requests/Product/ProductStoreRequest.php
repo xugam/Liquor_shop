@@ -22,7 +22,7 @@ class ProductStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|30',
+            'name' => 'required|string|max:30',
             'price' => 'required|numeric',
             'category_id' => 'required|numeric',
             'brand_id' => 'required|numeric',
@@ -30,7 +30,7 @@ class ProductStoreRequest extends FormRequest
             'base_unit_id' => 'required|numeric',
             'volume_ml' => 'nullable|numeric',
             'stock' => 'nullable|numeric',
-            'sku' => 'required|string|30',
+            'sku' => 'required|string|max:30',
         ];
     }
 }
