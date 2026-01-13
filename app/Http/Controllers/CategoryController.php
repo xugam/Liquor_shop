@@ -46,4 +46,29 @@ class CategoryController extends Controller
         }
         return response()->json($category, 201);
     }
+
+    public function update(Category  $category, Request $request)
+    {
+        if ($category) {
+            $category->update($request->all());
+            if ($request->hasFile('image')) {
+                $category->clearMediaCollection('category_images');
+                $category
+                    ->addMedia($request->file('image'))
+                    ->toMediaCollection('category_images');
+            }
+            return response()->json($category, 200);
+        } else {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+    }
+    public function destroy(Category $category)
+    {
+        if ($category) {
+            $category->delete();
+            return response()->json(['message' => 'Category deleted successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+    }
 }

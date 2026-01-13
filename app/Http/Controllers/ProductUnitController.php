@@ -15,6 +15,25 @@ class ProductUnitController extends Controller
         return response()->json($data, 200);
     }
 
+    public function update(ProductUnit $productUnit, Request $request)
+    {
+        if ($productUnit) {
+            $productUnit->update($request->all());
+            return response()->json($productUnit, 200);
+        } else {
+            return response()->json(['message' => 'Product unit not found'], 404);
+        }
+    }
+
+    public function destroy(ProductUnit $productUnit)
+    {
+        if ($productUnit) {
+            $productUnit->delete();
+            return response()->json(['message' => 'Product unit deleted successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Product unit not found'], 404);
+        }
+    }
     public function store(Request $request)
     {
         $request->validate([
