@@ -12,7 +12,7 @@ class ProductUnit extends Model
         'name',
         'conversion_factor',
         'slug',
-        'is_base_unit'
+        'is_base_unit',
     ];
     public function products()
     {

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CategoryListResource;
+use App\Http\Resources\ProductListResource;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -15,6 +17,22 @@ class CategoryController extends Controller
         return response()->json($data, 200);
     }
 
+    //show products by specific category
+    public function show($id)
+    {
+        $category = Category::find($id);
+        if ($category) {
+            $collection = ProductListResource::collection(Product::where('category_id', $id)->get());
+            $data = $collection->toArray(request());
+            foreach ($data as &$item) {
+                unset($item['category']);
+            }
+            return response()->json($data, 200);
+        } else {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -22,7 +40,9 @@ class CategoryController extends Controller
         ]);
         $category = Category::create($request->all());
         if ($request->hasFile('image')) {
-            $category->addMedia($request->file('image'))->toMediaCollection('category_images');
+            $category
+                ->addMedia($request->file('image'))
+                ->toMediaCollection('category_images');
         }
         return response()->json($category, 201);
     }

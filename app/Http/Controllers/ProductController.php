@@ -16,14 +16,15 @@ class ProductController extends Controller
         return response()->json($data, 200);
     }
 
-    public function store(ProductStoreRequest $product)
+    public function store(ProductStoreRequest $request)
     {
-        $product->validated();
-        //return $product->all();
-        $product = Product::create($product->all());
-        // if ($product->hasFile('image')) {
-        //     $product->addMedia($product->file('image'))->toMediaCollection('product_images');
-        // }
+        $request->validated();
+        $product = Product::create($request->all());
+        if ($request->hasFile('image')) {
+            $product
+                ->addMedia($request->file('image'))
+                ->toMediaCollection('product_images');
+        }
         return response()->json($product, 201);
     }
 

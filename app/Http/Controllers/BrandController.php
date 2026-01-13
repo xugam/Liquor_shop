@@ -23,7 +23,9 @@ class BrandController extends Controller
         ]);
         $brand = Brand::create($request->all());
         if ($request->hasFile('image')) {
-            $brand->addMedia($request->file('image'))->toMediaCollection('brand_images');
+            $brand
+                ->addMedia($request->file('image'))
+                ->toMediaCollection('brand_images');
         }
         return response()->json($brand, 201);
     }

@@ -17,17 +17,13 @@ class ProductListResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'price' => $this->price,
             'slug' => $this->slug,
-            'category_id' => $this->category_id,
-            'brand_id' => $this->brand_id,
-            'status' => $this->status,
-            'base_unit_id' => $this->base_unit_id,
-            'volume_ml' => $this->volume_ml,
-            'stock' => $this->stock,
+            'image' => $this->getFirstMediaUrl('product_images'),
             'sku' => $this->sku,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'brand' => $this->brand->name,
+            'category' => $this->category->name,
         ];
     }
 }

@@ -13,13 +13,11 @@ class Product extends Model implements HasMedia
     use InteractsWithMedia;
     protected $fillable = [
         'name',
-        'price',
         'slug',
         'category_id',
         'brand_id',
-        'status',
         'base_unit_id',
-        'volume_ml',
+        'status',
         'sku'
     ];
 
@@ -36,5 +34,9 @@ class Product extends Model implements HasMedia
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+    public function baseUnit()
+    {
+        return $this->belongsTo(ProductUnit::class, 'base_unit_id');
     }
 }

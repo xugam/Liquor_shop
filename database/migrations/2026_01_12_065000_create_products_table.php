@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->enum('status', ['active', 'inactive'])->default('inactive');
-            $table->integer('price');
-            $table->integer('volume_ml')->nullable();
 
             //Foreign keys
             $table->foreignId('base_unit_id')->constrained('product_units')->cascadeOnDelete();
