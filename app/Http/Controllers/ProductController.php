@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Resources\ProductListResource;
 use App\Models\Product;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 
 
 class ProductController extends Controller
 {
+    use ResponseTrait;
     /**
      * @OA\Get(
      *     path="/products",
@@ -28,7 +30,7 @@ class ProductController extends Controller
     {
         $product = Product::all();
         $data = ProductListResource::collection($product);
-        return response()->json($data, 200);
+        return $this->apiSuccess("Product list", $data);
     }
 
     /**
@@ -95,7 +97,7 @@ class ProductController extends Controller
                 ->addMedia($request->file('image'))
                 ->toMediaCollection('product_images');
         }
-        return response()->json($product, 201);
+        return $this->apiSuccess("Product created successfully", $product);
     }
 
     /**
@@ -120,9 +122,9 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
         if ($product) {
-            return response()->json($product, 200);
+            return $this->apiSuccess("Product found successfully", $product);
         } else {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->apiError("Product not found");
         }
     }
 
@@ -172,9 +174,9 @@ class ProductController extends Controller
     {
         if ($product) {
             $product->update($request->all());
-            return response()->json($product, 200);
+            return $this->apiSuccess("Product updated successfully", $product);
         } else {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->apiError("Product not found");
         }
     }
 
@@ -201,9 +203,9 @@ class ProductController extends Controller
         $product = Product::find($id);
         if ($product) {
             $product->delete();
-            return response()->json(['message' => 'Product deleted successfully'], 200);
+            return $this->apiSuccess("Product deleted successfully");
         } else {
-            return response()->json(['message' => 'Product not found'], 404);
+            return $this->apiError("Product not found");
         }
     }
 }

@@ -23,6 +23,8 @@ class ProductStoreRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:30',
+            'cost_price' => 'required|numeric',
+            'selling_price' => 'required|numeric',
             'category_id' => 'required|numeric',
             'brand_id' => 'required|numeric',
             'status' => 'required|numeric',

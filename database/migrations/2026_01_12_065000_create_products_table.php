@@ -18,7 +18,6 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->decimal('cost_price', 12, 2);
             $table->decimal('selling_price', 12, 2);
-            $table->decimal('discount_price', 12, 2)->nullable();
             //Foreign keys
             $table->foreignId('base_unit_id')->constrained('product_units')->cascadeOnDelete();
             $table->foreignId('brand_id')->constrained('brands')->cascadeOnDelete();

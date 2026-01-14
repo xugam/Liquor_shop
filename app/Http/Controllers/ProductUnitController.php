@@ -4,24 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ProductUnitListResource;
 use App\Models\ProductUnit;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class ProductUnitController extends Controller
 {
+    use ResponseTrait;
     public function index()
     {
         $productUnit = ProductUnit::all();
         $data = ProductUnitListResource::collection($productUnit);
-        return response()->json($data, 200);
+        return $this->apiSuccess("Product unit list", $data);
     }
 
     public function update(ProductUnit $productUnit, Request $request)
     {
         if ($productUnit) {
             $productUnit->update($request->all());
-            return response()->json($productUnit, 200);
+            return $this->apiSuccess("Product unit updated successfully", $productUnit);
         } else {
-            return response()->json(['message' => 'Product unit not found'], 404);
+            return $this->apiError("Product unit not found");
         }
     }
 
@@ -29,9 +31,9 @@ class ProductUnitController extends Controller
     {
         if ($productUnit) {
             $productUnit->delete();
-            return response()->json(['message' => 'Product unit deleted successfully'], 200);
+            return $this->apiSuccess("Product unit deleted successfully");
         } else {
-            return response()->json(['message' => 'Product unit not found'], 404);
+            return $this->apiError("Product unit not found");
         }
     }
     public function store(Request $request)
@@ -41,6 +43,6 @@ class ProductUnitController extends Controller
             'conversion_factor' => 'required|numeric',
         ]);
         $productUnit = ProductUnit::create($request->all());
-        return response()->json($productUnit, 201);
+        return $this->apiSuccess("Product unit created successfully", $productUnit);
     }
 }

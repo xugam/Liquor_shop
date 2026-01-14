@@ -18,6 +18,8 @@ class ProductListResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'cost_price' => $this->cost_price,
+            'selling_price' => $this->selling_price,
             'image' => $this->getFirstMediaUrl('product_images'),
             'sku' => $this->sku,
             'created_at' => $this->created_at,

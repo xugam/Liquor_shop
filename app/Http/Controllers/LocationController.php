@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
+    use ResponseTrait;
     public function index()
     {
         $locations = Location::all();
-        return response()->json($locations);
+        return $this->apiSuccess("Location list", $locations);
     }
 
     public function store(Request $request)
@@ -22,16 +24,16 @@ class LocationController extends Controller
             'additional_info' => 'nullable|string',
         ]);
         $location = Location::create($request->all());
-        return response()->json($location);
+        return $this->apiSuccess("Location created successfully", $location);
     }
 
     public function update(Location $location, Request $request)
     {
         if ($location) {
             $location->update($request->all());
-            return response()->json($location);
+            return $this->apiSuccess("Location updated successfully", $location);
         } else {
-            return response()->json(['message' => 'Location not found'], 404);
+            return $this->apiError("Location not found");
         }
     }
 
@@ -39,9 +41,9 @@ class LocationController extends Controller
     {
         if ($location) {
             $location->delete();
-            return response()->json(['message' => 'Location deleted successfully'], 200);
+            return $this->apiSuccess("Location deleted successfully");
         } else {
-            return response()->json(['message' => 'Location not found'], 404);
+            return $this->apiError("Location not found");
         }
     }
 }

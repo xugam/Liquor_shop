@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\SupplierListResource;
 use App\Models\Supplier;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
+    use ResponseTrait;
     public function index()
     {
         $supplier = Supplier::all();
         $data = SupplierListResource::collection($supplier);
-        return response()->json($data, 200);
+        return $this->apiSuccess("Supplier list", $data);
     }
 
     public function store(Request $request)
@@ -24,16 +26,16 @@ class SupplierController extends Controller
             'email' => 'required|email|max:255',
         ]);
         $supplier = Supplier::create($request->all());
-        return response()->json($supplier, 201);
+        return $this->apiSuccess("Supplier created successfully", $supplier);
     }
 
     public function update(Supplier $supplier, Request $request)
     {
         if ($supplier) {
             $supplier->update($request->all());
-            return response()->json($supplier, 200);
+            return $this->apiSuccess("Supplier updated successfully", $supplier);
         } else {
-            return response()->json(['message' => 'Supplier not found'], 404);
+            return $this->apiError("Supplier not found");
         }
     }
 
@@ -41,9 +43,9 @@ class SupplierController extends Controller
     {
         if ($supplier) {
             $supplier->delete();
-            return response()->json(['message' => 'Supplier deleted successfully'], 200);
+            return $this->apiSuccess("Supplier deleted successfully");
         } else {
-            return response()->json(['message' => 'Supplier not found'], 404);
+            return $this->apiError("Supplier not found");
         }
     }
 }

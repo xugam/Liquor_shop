@@ -6,15 +6,17 @@ use App\Http\Resources\CategoryListResource;
 use App\Http\Resources\ProductListResource;
 use App\Models\Category;
 use App\Models\Product;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    use ResponseTrait;
     public function index()
     {
         $category = Category::all();
         $data = CategoryListResource::collection($category);
-        return response()->json($data, 200);
+        return $this->apiSuccess("Category list", $data);
     }
 
     //show products by specific category
@@ -27,9 +29,9 @@ class CategoryController extends Controller
             foreach ($data as &$item) {
                 unset($item['category']);
             }
-            return response()->json($data, 200);
+            return $this->apiSuccess("Category found successfully", $data);
         } else {
-            return response()->json(['message' => 'Category not found'], 404);
+            return $this->apiError("Category not found");
         }
     }
 
@@ -44,7 +46,7 @@ class CategoryController extends Controller
                 ->addMedia($request->file('image'))
                 ->toMediaCollection('category_images');
         }
-        return response()->json($category, 201);
+        return $this->apiSuccess("Category created successfully", $category);
     }
 
     public function update(Category  $category, Request $request)
@@ -57,18 +59,18 @@ class CategoryController extends Controller
                     ->addMedia($request->file('image'))
                     ->toMediaCollection('category_images');
             }
-            return response()->json($category, 200);
+            return $this->apiSuccess("Category updated successfully", $category);
         } else {
-            return response()->json(['message' => 'Category not found'], 404);
+            return $this->apiError("Category not found");
         }
     }
     public function destroy(Category $category)
     {
         if ($category) {
             $category->delete();
-            return response()->json(['message' => 'Category deleted successfully'], 200);
+            return $this->apiSuccess("Category deleted successfully");
         } else {
-            return response()->json(['message' => 'Category not found'], 404);
+            return $this->apiError("Category not found");
         }
     }
 }

@@ -6,10 +6,12 @@ use App\Http\Resources\BrandListResource;
 use App\Http\Resources\ProductListResource;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
+    use ResponseTrait;
     /**
      * @OA\Get(
      *     path="/brands",
@@ -30,7 +32,7 @@ class BrandController extends Controller
     {
         $brand = Brand::all();
         $data = BrandListResource::collection($brand);
-        return response()->json($data, 200);
+        return $this->apiSuccess("Brand list", $data);
     }
 
     /**
@@ -64,9 +66,9 @@ class BrandController extends Controller
             foreach ($data as &$item) {
                 unset($item['brand']);
             }
-            return response()->json($data, 200);
+            return $this->apiSuccess("Brand found successfully", $data);
         } else {
-            return response()->json(['message' => 'Category not found'], 404);
+            return $this->apiError("Brand not found");
         }
     }
 
@@ -104,7 +106,7 @@ class BrandController extends Controller
                 ->addMedia($request->file('image'))
                 ->toMediaCollection('brand_images');
         }
-        return response()->json($brand, 201);
+        return $this->apiSuccess("Brand created successfully", $brand);
     }
 
     /**
@@ -145,9 +147,9 @@ class BrandController extends Controller
                     ->addMedia($request->file('image'))
                     ->toMediaCollection('brand_images');
             }
-            return response()->json($brand, 200);
+            return $this->apiSuccess("Brand updated successfully", $brand);
         } else {
-            return response()->json(['message' => 'Brand not found'], 404);
+            return $this->apiError("Brand not found");
         }
     }
 
@@ -178,9 +180,9 @@ class BrandController extends Controller
         $brand = Brand::find($id);
         if ($brand) {
             $brand->delete();
-            return response()->json(['message' => 'Brand deleted successfully'], 200);
+            return $this->apiSuccess("Brand deleted successfully");
         } else {
-            return response()->json(['message' => 'Brand not found'], 404);
+            return $this->apiError("Brand not found");
         }
     }
 }

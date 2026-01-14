@@ -14,18 +14,14 @@ return new class extends Migration
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained()->nullOnDelete();
-            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('product_unit_id')->nullable()->constrained();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignId('location_id')->constrained('locations')->onDelete('SET NULL');
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('SET NULL');
+            $table->foreignId('product_unit_id')->nullable()->constrained('product_units');
 
             $table->enum('type', ['in', 'out', 'transfer', 'adjustment']);
-
-            // ALWAYS BASE UNIT
             $table->decimal('quantity', 12, 3);
-
             $table->decimal('unit_cost', 12, 2)->nullable();
-
             $table->string('reference')->nullable();
             $table->timestamps();
         });

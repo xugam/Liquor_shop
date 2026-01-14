@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
+use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Request;
 
 
 class AuthController extends Controller
 {
+    use ResponseTrait;
 
     /**
      * @OA\Post(
@@ -41,11 +43,10 @@ class AuthController extends Controller
      */
     public function register(UserRegisterRequest $request)
     {
+
         $data = $request->validated();
-
         User::create($data);
-
-        return response()->json(['message' => 'User registered successfully'], 201);
+        return $this->apiSuccess("User registered successfully");
     }
 
     /**
@@ -75,15 +76,14 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
         $user = User::where('email', $credentials['email'])->first();
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return $this->apiError("User not found");
         }
         if (!Hash::check($credentials['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return $this->apiError("Invalid credentials");
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        $data['data'] = ['access_token' => $token, 'message' => 'Logged In successfully'];
-        return response()->json($data, 200);
+        return $this->apiSuccess("User login successfully", $credentials, $token);
     }
 
     /**
@@ -105,6 +105,6 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out successfully'], 200);
+        return $this->apiSuccess("User logged out successfully");
     }
 }
