@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LocationController;
@@ -13,9 +14,19 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('products', ProductController::class);
-Route::apiResource('brands', BrandController::class);
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('product-units', ProductUnitController::class)->except(['show']);
-Route::apiResource('suppliers', SupplierController::class);
-Route::apiResource('locations', LocationController::class)->except(['show']);
+
+//Admin panels
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('brands', BrandController::class);
+    Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('product-units', ProductUnitController::class)->except(['show']);
+    Route::apiResource('suppliers', SupplierController::class);
+    Route::apiResource('locations', LocationController::class)->except(['show']);
+});
+
+
+//Admin Only 
+Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

@@ -10,6 +10,22 @@ use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/brands",
+     *     summary="Get all brands",
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Brands retrieved successfully"
+     *     )
+     * )
+     */
     public function index()
     {
         $brand = Brand::all();
@@ -17,6 +33,28 @@ class BrandController extends Controller
         return response()->json($data, 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/brands/{id}",
+     *     summary="Get a specific brand",
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Brand retrieved successfully"
+     *     )
+     * )
+     */
     public function show($id)
     {
         $brand = Brand::find($id);
@@ -32,6 +70,28 @@ class BrandController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/brands",
+     *     summary="Create a new brand",
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Brand created successfully"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         // return $request->all();
@@ -46,6 +106,35 @@ class BrandController extends Controller
         }
         return response()->json($brand, 201);
     }
+
+    /**
+     * @OA\Put(
+     *     path="/brands/{id}",
+     *     summary="Update a brand",
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Brand updated successfully"
+     *     )
+     * )
+     */
     public function update(Brand $brand, Request $request)
     {
         if ($brand) {
@@ -61,6 +150,29 @@ class BrandController extends Controller
             return response()->json(['message' => 'Brand not found'], 404);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/brands/{id}",
+     *     summary="Delete a brand",
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Brand deleted successfully"
+     *     )
+     * )
+     */
     public function destroy($id)
     {
         $brand = Brand::find($id);

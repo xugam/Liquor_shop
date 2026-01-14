@@ -7,14 +7,84 @@ use App\Http\Resources\ProductListResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+
+
 class ProductController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/products",
+     *     summary="Get all products",
+     * tags={"Products"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *     )
+     * )
+     */
+
     public function index()
     {
         $product = Product::all();
         $data = ProductListResource::collection($product);
         return response()->json($data, 200);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/products",
+     *     summary="Create a new product",
+     * tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="image",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="file")
+     *     ),
+     *     @OA\Parameter(
+     *         name="brand_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="base_unit_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sku",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Product created successfully",
+     *     )
+     * )
+     */
 
     public function store(ProductStoreRequest $request)
     {
@@ -28,6 +98,24 @@ class ProductController extends Controller
         return response()->json($product, 201);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/products/{id}",
+     *     summary="Get a product by ID",
+     * tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product found successfully",
+     *     )
+     * )
+     */
     public function show($id)
     {
         $product = Product::find($id);
@@ -38,6 +126,48 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/products/{id}",
+     *     summary="Update a product by ID",
+     * tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="description",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="price",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="image",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="file")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product updated successfully",
+     *     )
+     * )
+     */
     public function update(Product $product, Request $request)
     {
         if ($product) {
@@ -48,6 +178,24 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/products/{id}",
+     *     summary="Delete a product by ID",
+     * tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product deleted successfully",
+     *     )
+     * )
+     */
     public function destroy($id)
     {
         $product = Product::find($id);
