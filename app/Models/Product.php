@@ -37,8 +37,25 @@ class Product extends Model implements HasMedia
     {
         return $this->belongsTo(Brand::class);
     }
+
     public function baseUnit()
     {
         return $this->belongsTo(ProductUnit::class, 'base_unit_id');
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function getStockAtLocation($locationId)
+    {
+        return $this->stockMovements()
+            ->where('location_id', $locationId)
+            ->sum('quantity'); // Always in base units
     }
 }

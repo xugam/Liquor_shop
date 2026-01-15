@@ -9,6 +9,7 @@ trait SlugTrait
     /**
      * Boot the trait and automatically generate slug before saving.
      */
+
     public static function bootSlugTrait()
     {
         static::creating(function ($model) {

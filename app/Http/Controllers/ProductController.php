@@ -208,4 +208,14 @@ class ProductController extends Controller
             return $this->apiError("Product not found");
         }
     }
+    public function getStock($id)
+    {
+        $product = Product::find($id);
+        if ($product) {
+            $stock = $product->stock;
+            return $this->apiSuccess("Product found successfully", $stock);
+        } else {
+            return $this->apiError("Product not found");
+        }
+    }
 }

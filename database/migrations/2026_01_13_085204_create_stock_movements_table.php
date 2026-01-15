@@ -14,15 +14,18 @@ return new class extends Migration
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained('locations')->onDelete('SET NULL');
-            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('SET NULL');
-            $table->foreignId('product_unit_id')->nullable()->constrained('product_units');
+            //Stock between two location to modify each stocks on location
+            $table->foreignId('from_location_id')->nullable()->constrained('locations')->nullOnDelete();
+            $table->foreignId('to_location_id')->nullable()->constrained('locations')->nullOnDelete();
 
-            $table->enum('type', ['in', 'out', 'transfer', 'adjustment']);
+            //
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
+            $table->foreignId('product_unit_id')->nullable()->constrained('product_units')->nullOnDelete();
+
+            $table->enum('type', ['IN', 'OUT', 'TRANSFER', 'ADJUSTMENT']);
             $table->decimal('quantity', 12, 3);
-            $table->decimal('unit_cost', 12, 2)->nullable();
-            $table->string('reference')->nullable();
             $table->timestamps();
         });
     }

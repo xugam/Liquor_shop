@@ -18,4 +18,10 @@ class ProductUnit extends Model
     {
         return $this->hasMany(Product::class, 'base_unit_id');
     }
+
+    // Helper: Convert unit to base
+    public function convertToBaseUnits($quantity)
+    {
+        return $quantity * $this->conversion_factor;
+    }
 }
