@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
-            $table->string('payment_type');
+            $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
+            $table->enum('payment_type', ['cash', 'cheque'])->default('cash');
             $table->decimal('total_amount', 10, 2);
-            $table->date('date');
+            $table->enum('status', ['completed', 'pending', 'cancelled'])->default('completed');
             $table->timestamps();
         });
     }

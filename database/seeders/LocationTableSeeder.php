@@ -24,11 +24,9 @@ class LocationTableSeeder extends Seeder
         foreach ($locations as $name) {
             Location::create([
                 'name' => $name,
+                'slug' => str($name)->slug(),
                 'type' => 'warehouse',
                 'address' => '123 Main St',
-                'additional_info' => 'near someone home',
-                'created_at' => now(),
-                'updated_at' => now()
             ]);
         }
     }

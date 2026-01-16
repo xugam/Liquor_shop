@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Resources\ProductListResource;
 use App\Models\Product;
+use App\Traits\PaginationTrait;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     use ResponseTrait;
+    use PaginationTrait;
     /**
      * @OA\Get(
      *     path="/products",
@@ -26,11 +28,20 @@ class ProductController extends Controller
      * )
      */
 
-    public function index()
+    public function index(Request $request)
     {
-        $product = Product::all();
-        $data = ProductListResource::collection($product);
-        return $this->apiSuccess("Product list", $data);
+        $search = $request->input('search');
+        if ($search) {
+            $product = Product::where('name', 'like', "%{$search}%")->paginate($this->perPage($request));
+        } else {
+            $product = Product::paginate($this->perPage($request));
+        }
+        if (!$product->isEmpty()) {
+            $data = ProductListResource::collection($product);
+            return $this->apiSuccess("Product list", $data);
+        } else {
+            return $this->apiError("Product not found");
+        }
     }
 
     /**

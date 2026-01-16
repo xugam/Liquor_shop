@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LocationProduct;
 use App\Models\StockMovement;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use Illuminate\Support\Facades\DB;
 
 class StockService
@@ -12,33 +13,26 @@ class StockService
     /**
      * Add stock to a location
      */
-    public function addStock($productId, $locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $notes = null)
+    public function addStock($productId, $locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $supplierId = null)
     {
-        $product = Product::findOrFail($productId);
-
-        // Convert to base units
-        $quantityInBaseUnits = $product->convertToBaseUnits($quantity, $unitType);
-
-        // Update stock balance
-        $stock = LocationProduct::firstOrCreate(
-            ['product_id' => $productId, 'location_id' => $locationId],
-            ['quantity' => 0]
-        );
-        $stock->increment('quantity', $quantityInBaseUnits);
+        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
+        $productunit = ProductUnit::where('id', $unitType)->first();
+        $basequantity = $productunit->convertToBaseUnits($quantity);
+        $locationProduct->quantity = $locationProduct->quantity + $basequantity;
+        $locationProduct->save();
 
         // Record movement
-        StockMovement::create([
+        $stockMovement = StockMovement::create([
             'product_id' => $productId,
-            'location_id' => $locationId,
-            'quantity' => $quantityInBaseUnits,
-            'movement_type' => 'IN',
-            'unit_used_for_entry' => $unitType,
-            'reference_type' => $referenceType,
-            'reference_id' => $referenceId,
-            'notes' => $notes,
+            'product_unit_id' => $unitType,
+            'from_location_id' => null,
+            'to_location_id' => $locationId,
+            'supplier_id' => $supplierId,
+            'quantity' => $basequantity,
+            'type' => 'IN',
         ]);
 
-        return $stock;
+        return $stockMovement;
     }
 
     /**
@@ -73,7 +67,6 @@ class StockService
             'unit_used_for_entry' => $unitType,
             'reference_type' => $referenceType,
             'reference_id' => $referenceId,
-            'notes' => $notes,
             // 'created_by' => auth()->id()
         ]);
 

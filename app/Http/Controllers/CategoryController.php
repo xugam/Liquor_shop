@@ -6,15 +6,17 @@ use App\Http\Resources\CategoryListResource;
 use App\Http\Resources\ProductListResource;
 use App\Models\Category;
 use App\Models\Product;
+use App\Traits\PaginationTrait;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     use ResponseTrait;
-    public function index()
+    use PaginationTrait;
+    public function index(Request $request)
     {
-        $category = Category::all();
+        $category = Category::paginate($this->perPage($request));
         $data = CategoryListResource::collection($category);
         return $this->apiSuccess("Category list", $data);
     }
@@ -25,6 +27,9 @@ class CategoryController extends Controller
         $category = Category::find($id);
         if ($category) {
             $collection = ProductListResource::collection(Product::where('category_id', $id)->get());
+            if ($collection->isEmpty()) {
+                return $this->apiError("No product found in this category");
+            }
             $data = $collection->toArray(request());
             foreach ($data as &$item) {
                 unset($item['category']);
@@ -68,6 +73,7 @@ class CategoryController extends Controller
     {
         if ($category) {
             $category->delete();
+            $category->clearMediaCollection('category_images');
             return $this->apiSuccess("Category deleted successfully");
         } else {
             return $this->apiError("Category not found");

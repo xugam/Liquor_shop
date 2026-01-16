@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Stock\addStockRequest;
 use App\Models\Location;
 use App\Models\LocationProduct;
 use App\Models\Product;
 use App\Models\ProductUnit;
 use App\Models\StockMovement;
+use App\Services\StockService;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
@@ -15,35 +17,39 @@ class StockMovementController extends Controller
 
     use ResponseTrait;
 
-    public function incoming(Request $request)
+    protected $stockService;
+
+    public function __construct(StockService $stockService)
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'location_id' => 'required|exists:locations,id',
-            'quantity' => 'required|numeric|min:0',
-            'unit_id' => 'required|exists:product_units,id', // Bottle/Carton/Pack
-            'supplier_id' => 'nullable|exists:suppliers,id'
-        ]);
-        // return $validated;
+        $this->stockService = $stockService;
+    }
 
-        //Conversion part in location and update quantity
-        $locationProduct = LocationProduct::where('product_id', $validated['product_id'])->where('location_id', $validated['location_id'])->first();
-        $productunit = ProductUnit::where('id', $validated['unit_id'])->first();
+    //IN
+    public function incoming(addStockRequest $request)
+    {
+        $validated = $request->validated();
+        $stockMovement = $this->stockService->addStock($validated['product_id'], $validated['location_id'], $validated['quantity'], $validated['unit_id']);
 
-        $basequantity = $productunit->convertToBaseUnits($validated['quantity']);
-        $locationProduct->quantity = $locationProduct->quantity + $basequantity;
-        $locationProduct->save();
+        // //Conversion part in location and update quantity
+        // $locationProduct = LocationProduct::where('product_id', $validated['product_id'])->where('location_id', $validated['location_id'])->first();
+        // $productunit = ProductUnit::where('id', $validated['unit_id'])->first();
 
-        // Create stock movement
-        $stockMovement = StockMovement::create([
-            'product_id' => $validated['product_id'],
-            'location_id' => $validated['location_id'],
-            'quantity' => $validated['quantity'],
-            'type' => 'IN',
-            'product_unit_id' => $validated['unit_id'],
-        ]);
+        // $basequantity = $productunit->convertToBaseUnits($validated['quantity']);
+        // $locationProduct->quantity = $locationProduct->quantity + $basequantity;
+        // $locationProduct->save();
 
-        return $this->apiSuccess('Stock added successfully', $stockMovement);
+        // // Create stock movement
+        // $stockMovement = StockMovement::create([
+        //     'product_id' => $validated['product_id'],
+        //     'location_id' => $validated['location_id'],
+        //     'quantity' => $validated['quantity'],
+        //     'type' => 'IN',
+        //     'product_unit_id' => $validated['unit_id'],
+        // ]);
+        if ($stockMovement) {
+            return $this->apiSuccess('Stock added successfully', $stockMovement);
+        }
+        return $this->apiError('Stock added failed');
     }
 
     public function transfer(Request $request)

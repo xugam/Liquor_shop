@@ -6,12 +6,14 @@ use App\Http\Resources\BrandListResource;
 use App\Http\Resources\ProductListResource;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Traits\PaginationTrait;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
     use ResponseTrait;
+    use PaginationTrait;
     /**
      * @OA\Get(
      *     path="/brands",
@@ -28,9 +30,9 @@ class BrandController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $brand = Brand::all();
+        $brand = Brand::paginate($this->perPage($request));
         $data = BrandListResource::collection($brand);
         return $this->apiSuccess("Brand list", $data);
     }
@@ -180,6 +182,7 @@ class BrandController extends Controller
         $brand = Brand::find($id);
         if ($brand) {
             $brand->delete();
+            $brand->clearMediaCollection('brand_images');
             return $this->apiSuccess("Brand deleted successfully");
         } else {
             return $this->apiError("Brand not found");

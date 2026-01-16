@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('cheques', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('sale_id')->constrained('sales')->cascadeOnDelete();
             $table->string('customer_name');
-            $table->string('cheque_number');
+            $table->string('cheque_number')->unique();
             $table->string('bank_name');
             $table->decimal('amount', 10, 2);
             $table->date('cheque_date');
             $table->date('cashable_date');
             $table->date('reminder_date');
-            $table->string('status');
+            $table->enum('status', ['pending', 'deposited', 'cleared', 'bounced'])->default('pending');
             $table->timestamps();
         });
     }

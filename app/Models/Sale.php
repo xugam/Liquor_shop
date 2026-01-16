@@ -10,7 +10,19 @@ class Sale extends Model
         'location_id',
         'payment_type',
         'total_amount',
-        'date',
+        'status'
 
     ];
+    public function items()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+    public function cheque()
+    {
+        return $this->hasOne(Cheque::class);
+    }
 }

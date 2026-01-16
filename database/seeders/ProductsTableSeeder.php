@@ -14,18 +14,19 @@ class ProductsTableSeeder extends Seeder
     public function run(): void
     {
         for ($i = 0; $i < 10; $i++) {
-            Product::create([
+            $product = Product::create([
                 'name' => 'Product ' . $i,
                 'slug' => 'product-' . $i,
                 'cost_price' => $i * 10,
                 'selling_price' => $i * 20,
-                'image' => public_path('assets/beer.jpeg'),
                 'sku' => 'SKU' . $i,
                 'brand_id' => rand(1, 5),
                 'category_id' => rand(1, 5),
-                'supplier_id' => rand(1, 5),
-                'base_unit_id' => rand(1, 5),
+                'base_unit_id' => rand(1, 4),
+                'status' => 'active',
             ]);
+            $product->addMedia(public_path('assets/test' . $i . '.jpeg'))->preservingOriginal()
+                ->toMediaCollection('product_images');
         }
     }
 }

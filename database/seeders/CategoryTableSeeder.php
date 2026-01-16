@@ -14,15 +14,17 @@ class CategoryTableSeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Whiskey',
-            'Vodka',
-            'Beer',
-            'Rum',
-            'Tequila',
+            ['name' => 'Whiskey', 'slug' => 'whiskey'],
+            ['name' => 'Vodka', 'slug' => 'vodka'],
+            ['name' => 'Beer', 'slug' => 'beer'],
+            ['name' => 'Rum', 'slug' => 'rum'],
+            ['name' => 'Tequila', 'slug' => 'tequila'],
         ];
 
-        foreach ($categories as $name) {
-            Category::create(['name' => $name]);
+        foreach ($categories as $category) {
+            $category = Category::create($category);
+            $category->addMedia(public_path('assets/test' . $category->id . '.jpeg'))->preservingOriginal()
+                ->toMediaCollection('category_images');
         }
     }
 }

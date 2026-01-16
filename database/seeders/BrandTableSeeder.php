@@ -13,9 +13,17 @@ class BrandTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $brands = ['Jack Daniels', 'Absolut', 'Heineken', 'Chateau Margaux', 'Bacardi'];
-        foreach ($brands as $name) {
-            Brand::create(['name' => $name]);
+        $brands = [
+            ['name' => 'Jack Daniels', 'slug' => 'jack-daniels'],
+            ['name' => 'Absolut', 'slug' => 'absolut'],
+            ['name' => 'Heineken', 'slug' => 'heineken'],
+            ['name' => 'Chateau Margaux', 'slug' => 'chateau-margaux'],
+            ['name' => 'Bacardi', 'slug' => 'bacardi'],
+        ];
+        foreach ($brands as $brand) {
+            $brand = Brand::create($brand);
+            $brand->addMedia(public_path('assets/test' . $brand->id . '.jpeg'))->preservingOriginal()
+                ->toMediaCollection('brand_images');
         }
     }
 }

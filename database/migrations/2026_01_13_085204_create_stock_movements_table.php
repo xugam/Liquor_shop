@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->foreignId('product_unit_id')->nullable()->constrained('product_units')->nullOnDelete();
 
+
             $table->enum('type', ['IN', 'OUT', 'TRANSFER', 'ADJUSTMENT']);
             $table->decimal('quantity', 12, 3);
             $table->timestamps();

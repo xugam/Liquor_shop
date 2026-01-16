@@ -21,7 +21,7 @@ class BrandListResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'image_url' => $this->getFirstMediaUrl('brand_images'),
+            'image' => $this->getFirstMediaUrl('brand_images'),
         ];
     }
 }
