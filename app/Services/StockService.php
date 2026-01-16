@@ -38,59 +38,62 @@ class StockService
     /**
      * Deduct stock from a location
      */
-    public function deductStock($productId, $locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $notes = null)
+    public function deductStock($productId, $locationId, $quantity, $unitType,  $supplierId = null)
     {
-        $product = Product::findOrFail($productId);
-
-        // Convert to base units
-        $quantityInBaseUnits = $product->convertToBaseUnits($quantity, $unitType);
-
-        // Get stock
-        $stock =    LocationProduct::where('product_id', $productId)
-            ->where('location_id', $locationId)
-            ->firstOrFail();
-
-        // Check availability
-        if ($stock->quantity < $quantityInBaseUnits) {
-            throw new \Exception("Insufficient stock for product ID {$productId}. Available: {$stock->quantity}, Requested: {$quantityInBaseUnits}");
-        }
-
-        // Deduct stock
-        $stock->decrement('quantity', $quantityInBaseUnits);
+        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
+        $productunit = ProductUnit::where('id', $unitType)->first();
+        $basequantity = $productunit->convertToBaseUnits($quantity);
+        $locationProduct->quantity = $locationProduct->quantity - $basequantity;
+        $locationProduct->save();
 
         // Record movement
-        StockMovement::create([
+        $stockMovement = StockMovement::create([
             'product_id' => $productId,
-            'location_id' => $locationId,
-            'quantity' => -$quantityInBaseUnits, // Negative for OUT
-            'movement_type' => 'OUT',
-            'unit_used_for_entry' => $unitType,
-            'reference_type' => $referenceType,
-            'reference_id' => $referenceId,
-            // 'created_by' => auth()->id()
+            'product_unit_id' => $unitType,
+            'from_location_id' => $locationId,
+            'to_location_id' => null,
+            'supplier_id' => $supplierId,
+            'quantity' => $basequantity,
+            'type' => 'OUT',
         ]);
 
-        return $stock;
+        return $stockMovement;
     }
 
     /**
      * Transfer stock between locations
      */
-    public function transferStock($productId, $fromLocationId, $toLocationId, $quantity, $unitType, $notes = null)
+    public function transferStock($productId, $fromLocationId, $toLocationId, $quantity, $unitType, $supplierId = null)
     {
         DB::beginTransaction();
         try {
-            $product = Product::findOrFail($productId);
-            $quantityInBaseUnits = $product->convertToBaseUnits($quantity, $unitType);
+            $fromlocationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $fromLocationId)->first();
+            $tolocationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $toLocationId)->first();
+            if ($fromlocationProduct == null || $tolocationProduct == null) {
+                throw new \Exception('No stock of that product in that location');
+            }
 
-            // Deduct from source
-            $this->deductStock($productId, $fromLocationId, $quantity, $unitType, null, null, "Transfer to location {$toLocationId}: {$notes}");
-
-            // Add to destination
-            $this->addStock($productId, $toLocationId, $quantity, $unitType, null, null, "Transfer from location {$fromLocationId}: {$notes}");
-
+            $productunit = ProductUnit::where('id', $unitType)->first();
+            $basequantity = $productunit->convertToBaseUnits($quantity);
+            if ($fromlocationProduct->quantity < $basequantity) {
+                throw new \Exception('Insufficient stock in that location. Only left - ' . $fromlocationProduct->quantity);
+            }
+            $fromlocationProduct->quantity = $fromlocationProduct->quantity - $basequantity;
+            $fromlocationProduct->save();
+            $tolocationProduct->quantity = $tolocationProduct->quantity + $basequantity;
+            $tolocationProduct->save();
+            // Record movement
+            $stockMovement = StockMovement::create([
+                'product_id' => $productId,
+                'product_unit_id' => $unitType,
+                'from_location_id' => $fromLocationId,
+                'to_location_id' => $toLocationId,
+                'supplier_id' => $supplierId,
+                'quantity' => $basequantity,
+                'type' => 'TRANSFER',
+            ]);
             DB::commit();
-            return true;
+            return $stockMovement;
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -114,16 +117,13 @@ class StockService
      */
     public function checkAvailability($productId, $locationId, $quantity, $unitType)
     {
-        $product = Product::findOrFail($productId);
-        $quantityInBaseUnits = $product->convertToBaseUnits($quantity, $unitType);
-
+        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
+        $productunit = ProductUnit::where('id', $unitType)->first();
+        $basequantity = $productunit->convertToBaseUnits($quantity);
         $currentStock = $this->getStock($productId, $locationId);
-
-        return [
-            'available' => $currentStock >= $quantityInBaseUnits,
-            'current_stock' => $currentStock,
-            'requested' => $quantityInBaseUnits,
-            'shortage' => max(0, $quantityInBaseUnits - $currentStock)
-        ];
+        if ($currentStock < $basequantity) {
+            throw new \Exception('Insufficient stock in that location. Only left - ' . $currentStock);
+        }
+        return true;
     }
 }
