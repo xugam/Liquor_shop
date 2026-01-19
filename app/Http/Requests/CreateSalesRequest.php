@@ -25,10 +25,10 @@ class CreateSalesRequest extends FormRequest
             'location_id' => 'required|exists:locations,id',
             'payment_type' => 'required|in:cash,cheque',
             'items' => 'required|array|min:1',
+
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.unit_type' => 'required|string',
+            'items.*.unit_id' => 'required|exists:product_units,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.selling_price' => 'required|numeric|min:0',
 
             // Cheque details (conditional)
             'cheque.customer_name' => 'required_if:payment_type,cheque',

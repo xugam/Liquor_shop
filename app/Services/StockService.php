@@ -118,11 +118,22 @@ class StockService
     public function checkAvailability($productId, $locationId, $quantity, $unitType)
     {
         $productunit = ProductUnit::where('id', $unitType)->first();
+
         $basequantity = $productunit->convertToBaseUnits($quantity);
         $currentStock = $this->getStock($productId, $locationId);
+
         if ($currentStock < $basequantity) {
-            throw new \Exception('Insufficient stock in that location. Only left - ' . $currentStock);
+            return [
+                'available' => false,
+                'current_stock' => $currentStock,
+                'requested' => $basequantity
+            ];
+        } else {
+            return [
+                'available' => true,
+                'current_stock' => $currentStock,
+                'requested' => $basequantity
+            ];
         }
-        return true;
     }
 }
