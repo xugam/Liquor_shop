@@ -8,6 +8,7 @@ use App\Models\SaleItem;
 use App\Models\Cheque;
 use App\Models\Product;
 use App\Models\ProductUnit;
+use App\Models\StockMovement;
 use App\Services\StockService;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -75,13 +76,13 @@ class SaleController extends Controller
                 // Create sale item
                 SaleItem::create([
                     'sale_id' => $sale->id,
-                    'product_id' => $product->id,
-                    'unit_id' => $productunit->id,
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
                     'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $quantityInBaseUnits * $item['unit_price']
+                    'unit_price' => $product->selling_price,
+                    'total_price' => $quantityInBaseUnits * $product->selling_price
                 ]);
-                $totalAmount += $quantityInBaseUnits * $item['unit_price'];
+                $totalAmount += $quantityInBaseUnits * $product->selling_price;
             }
 
             $sale->update([
@@ -89,22 +90,22 @@ class SaleController extends Controller
             ]);
             $sale->save();
 
-            //     // 6. Handle cheque if payment type is cheque
-            //     if ($validated['payment_type'] === 'cheque') {
-            //         $reminderDate = Carbon::parse($validated['cheque']['cashable_date'])->subDay();
+            // 6. Handle cheque if payment type is cheque
+            if ($validated['payment_type'] === 'cheque') {
+                $reminderDate = Carbon::parse($validated['cheque']['cashable_date'])->subDay();
 
-            //         Cheque::create([
-            //             'sale_id' => $sale->id,
-            //             'customer_name' => $validated['cheque']['customer_name'],
-            //             'bank_name' => $validated['cheque']['bank_name'],
-            //             'cheque_number' => $validated['cheque']['cheque_number'],
-            //             'amount' => $validated['cheque']['amount'],
-            //             'cheque_date' => $validated['cheque']['cheque_date'],
-            //             'cashable_date' => $validated['cheque']['cashable_date'],
-            //             'reminder_date' => $reminderDate,
-            //             'status' => 'pending'
-            //         ]);
-            //     }
+                Cheque::create([
+                    'sale_id' => $sale->id,
+                    'customer_name' => $validated['cheque']['customer_name'],
+                    'bank_name' => $validated['cheque']['bank_name'],
+                    'cheque_number' => $validated['cheque']['cheque_number'],
+                    'amount' => $validated['cheque']['amount'],
+                    'cheque_date' => $validated['cheque']['cheque_date'],
+                    'cashable_date' => $validated['cheque']['cashable_date'],
+                    'reminder_date' => $reminderDate,
+                    'status' => 'pending'
+                ]);
+            }
 
             DB::commit();
 
@@ -122,89 +123,84 @@ class SaleController extends Controller
         }
     }
 
-        // /**
-        //  * Get all sales
-        //  */
-        // public function index(Request $request)
-        // {
-        //     $query = Sale::with(['items.product', 'location', 'cheque', 'createdBy']);
+    /**
+     * Get all sales
+     */
+    public function index(Request $request)
+    {
+        $query = Sale::with(['items.product', 'location', 'cheque']);
 
-        //     // Filters
-        //     if ($request->location_id) {
-        //         $query->where('location_id', $request->location_id);
-        //     }
+        // Filters
+        if ($request->location_id) {
+            $query->where('location_id', $request->location_id);
+        }
 
-        //     if ($request->payment_type) {
-        //         $query->where('payment_type', $request->payment_type);
-        //     }
+        if ($request->payment_type) {
+            $query->where('payment_type', $request->payment_type);
+        }
 
-        //     if ($request->from_date) {
-        //         $query->whereDate('created_at', '>=', $request->from_date);
-        //     }
+        if ($request->from_date) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
 
-        //     if ($request->to_date) {
-        //         $query->whereDate('created_at', '<=', $request->to_date);
-        //     }
+        if ($request->to_date) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
 
-        //     $sales = $query->orderBy('created_at', 'desc')->paginate(20);
+        $sales = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        //     return response()->json($sales);
-        // }
+        return response()->json($sales);
+    }
 
     /**
      * Get single sale details
      */
-    // public function show($id)
-    // {
-    //     $sale = Sale::with([
-    //         'items.product.brand',
-    //         'items.product.category',
-    //         'location',
-    //         'cheque',
-    //         'createdBy'
-    //     ])->findOrFail($id);
-
-    //     return response()->json($sale);
-    // }
+    public function show(Sale $sale)
+    {
+        if ($sale) {
+            $sale->load('items.product', 'cheque');
+            return $this->apiSuccess('Sale details', $sale);
+        }
+        return $this->apiError('Sale not found', 404);
+    }
 
     // /**
     //  * Cancel/Void a sale (restores stock)
     //  */
-    // public function cancel($id)
-    // {
-    //     DB::beginTransaction();
-    //     try {
-    //         $sale = Sale::with('items')->findOrFail($id);
+    public function cancel(Sale $sale)
+    {
+        DB::beginTransaction();
+        try {
 
-    //         // Check if already cancelled
-    //         if ($sale->status === 'cancelled') {
-    //             throw new \Exception('Sale is already cancelled');
-    //         }
+            // Check if already cancelled
+            if ($sale->status === 'cancelled') {
+                throw new \Exception('Sale is already cancelled');
+            }
 
-    //         // Restore stock for each item
-    //         foreach ($sale->items as $item) {
-    //             $this->stockService->addStock(
-    //                 productId: $item->product_id,
-    //                 locationId: $sale->location_id,
-    //                 quantity: $item->quantity_in_selected_unit,
-    //                 unitType: $item->unit_type,
-    //                 referenceType: Sale::class,
-    //                 referenceId: $sale->id,
-    //             );
-    //         }
+            // Restore stock for each item
+            $saleItem = SaleItem::where('sale_id', $sale->id)->get();
 
-    //         // Mark sale as cancelled
-    //         $sale->update(['status' => 'cancelled']);
+            foreach ($saleItem as $item) {
+                $this->stockService->addStock(
+                    $item->product_id,
+                    $sale->location_id,
+                    $item->quantity,
+                    $item->unit_id
+                );
+            }
 
-    //         DB::commit();
+            // Mark sale as cancelled
+            $sale->update(['status' => 'cancelled']);
 
-    //         return response()->json([
-    //             'message' => 'Sale cancelled and stock restored',
-    //             'sale_id' => $sale->id
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return response()->json(['error' => $e->getMessage()], 400);
-    //     }
-    // }
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Sale cancelled and stock restored',
+                'sale_id' => $sale->id
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
 }

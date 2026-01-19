@@ -29,7 +29,12 @@ class StockMovementController extends Controller
     public function incoming(addStockRequest $request)
     {
         $validated = $request->validated();
-        $stockMovement = $this->stockService->addStock($validated['product_id'], $validated['location_id'], $validated['quantity'], $validated['unit_id']);
+        $stockMovement = $this->stockService->addStock(
+            $validated['product_id'],
+            $validated['location_id'],
+            $validated['quantity'],
+            $validated['unit_id']
+        );
 
         if ($stockMovement) {
             return $this->apiSuccess('Stock added successfully', $stockMovement);
@@ -44,7 +49,13 @@ class StockMovementController extends Controller
         if ($validated['from_location_id'] == $validated['to_location_id']) {
             return $this->apiError('From and to location cannot be same', 400);
         }
-        $stockMovement = $this->stockService->transferStock($validated['product_id'], $validated['from_location_id'], $validated['to_location_id'], $validated['quantity'], $validated['unit_id']);
+        $stockMovement = $this->stockService->transferStock(
+            $validated['product_id'],
+            $validated['from_location_id'],
+            $validated['to_location_id'],
+            $validated['quantity'],
+            $validated['unit_id']
+        );
 
         if ($stockMovement) {
             return $this->apiSuccess('Stock transfered successfully', $stockMovement);
@@ -58,7 +69,12 @@ class StockMovementController extends Controller
 
         //Adjustments mainly -
 
-        $stockMovement = $this->stockService->deductStock($validated['product_id'], $validated['location_id'], $validated['quantity'], $validated['unit_id']);
+        $stockMovement = $this->stockService->deductStock(
+            $validated['product_id'],
+            $validated['location_id'],
+            $validated['quantity'],
+            $validated['unit_id']
+        );
 
         if ($stockMovement) {
             return $this->apiSuccess('Stock adjusted successfully', $stockMovement);

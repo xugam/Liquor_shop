@@ -23,6 +23,7 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('products', ProductController::class);
 Route::get('products/{id}/stock', [ProductController::class, 'getStock']);
 Route::apiResource('sales', SaleController::class);
+Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
 Route::apiResource('brands', BrandController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('product-units', ProductUnitController::class)->except(['show']);

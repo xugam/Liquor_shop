@@ -20,7 +20,6 @@ return new class extends Migration
 
             //
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
             $table->foreignId('product_unit_id')->nullable()->constrained('product_units')->nullOnDelete();
 
