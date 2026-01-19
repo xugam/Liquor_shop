@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('locations', LocationController::class)->except(['show']);
 
-    // Stock Management
+    // Stock Movements
     Route::post('stock/incoming', [StockMovementController::class, 'incoming']); // Add stock - IN
     Route::post('stock/transfer', [StockMovementController::class, 'transfer']); // Transfer between locations -TRANSFER
     Route::post('stock/adjustment', [StockMovementController::class, 'adjustment']); // Manual adjustment - ADJUSTMENT

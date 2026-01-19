@@ -39,45 +39,31 @@ class StockMovementController extends Controller
 
     public function transfer(TransferStockRequest $request)
     {
-        $validated = $request->validated();
 
+        $validated = $request->validated();
+        if ($validated['from_location_id'] == $validated['to_location_id']) {
+            return $this->apiError('From and to location cannot be same', 400);
+        }
         $stockMovement = $this->stockService->transferStock($validated['product_id'], $validated['from_location_id'], $validated['to_location_id'], $validated['quantity'], $validated['unit_id']);
 
         if ($stockMovement) {
             return $this->apiSuccess('Stock transfered successfully', $stockMovement);
         }
-        return $this->apiError('Stock transfered failed');
+        return $this->apiError('Stock transfered failed', 400);
     }
 
-    public function adjustment(Request $request)
+    public function adjustment(addStockRequest $request)
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'location_id' => 'required|exists:locations,id',
-            'quantity' => 'required|numeric|min:0',
-            'unit_id' => 'required|exists:product_units,id', // Bottle/Carton/Pack
-        ]);
+        $validated = $request->validated();
 
         //Adjustments mainly -
-        $locationProduct = LocationProduct::where('product_id', $validated['product_id'])->where('location_id', $validated['location_id'])->first();
-        $productunit = ProductUnit::where('id', $validated['unit_id'])->first();
 
-        $basequantity = $productunit->convertToBaseUnits($validated['quantity']);
-        $locationProduct->quantity = $locationProduct->quantity - $basequantity;
+        $stockMovement = $this->stockService->deductStock($validated['product_id'], $validated['location_id'], $validated['quantity'], $validated['unit_id']);
 
-        $locationProduct->save();
-
-
-        // Create stock movement
-        $stockMovement = StockMovement::create([
-            'product_id' => $validated['product_id'],
-            'location_id' => $validated['location_id'],
-            'quantity' => $validated['quantity'],
-            'type' => 'ADJUSTMENT',
-            'product_unit_id' => $validated['unit_id'],
-        ]);
-
-        return $this->apiSuccess('Stock adjusted successfully', $stockMovement);
+        if ($stockMovement) {
+            return $this->apiSuccess('Stock adjusted successfully', $stockMovement);
+        }
+        return $this->apiError('Stock adjusted failed');
     }
 
     public function movements()

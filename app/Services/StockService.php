@@ -117,7 +117,6 @@ class StockService
      */
     public function checkAvailability($productId, $locationId, $quantity, $unitType)
     {
-        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
         $productunit = ProductUnit::where('id', $unitType)->first();
         $basequantity = $productunit->convertToBaseUnits($quantity);
         $currentStock = $this->getStock($productId, $locationId);

@@ -10,12 +10,8 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
 
         $this->call([
             LocationTableSeeder::class,
@@ -23,6 +19,9 @@ class DatabaseSeeder extends Seeder
             BrandTableSeeder::class,
             ProductUnitTableSeeder::class,
             ProductsTableSeeder::class,
+            ProductLocationTableSeeder::class,
+            SupplierTableSeeder::class,
+            ProductLocationTableSeeder::class,
         ]);
     }
 }

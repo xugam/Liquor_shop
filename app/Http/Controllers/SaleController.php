@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateSalesRequest;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Cheque;
+use App\Models\Product;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,25 +24,9 @@ class SaleController extends Controller
     /**
      * Create a new sale (POS)
      */
-    public function store(Request $request)
+    public function store(CreateSalesRequest $request)
     {
-        $validated = $request->validate([
-            'location_id' => 'required|exists:locations,id',
-            'payment_type' => 'required|in:cash,cheque',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.unit_type' => 'required|string',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.selling_price' => 'required|numeric|min:0',
-
-            // Cheque details (conditional)
-            'cheque.customer_name' => 'required_if:payment_type,cheque',
-            'cheque.bank_name' => 'required_if:payment_type,cheque',
-            'cheque.cheque_number' => 'required_if:payment_type,cheque',
-            'cheque.amount' => 'required_if:payment_type,cheque',
-            'cheque.cheque_date' => 'required_if:payment_type,cheque|date',
-            'cheque.cashable_date' => 'required_if:payment_type,cheque|date',
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
         try {
@@ -77,7 +63,7 @@ class SaleController extends Controller
 
             // 4. Process each sale item
             foreach ($validated['items'] as $item) {
-                $product = \App\Models\Product::find($item['product_id']);
+                $product = Product::find($item['product_id']);
 
                 // Convert to base units for record keeping
                 $quantityInBaseUnits = $product->convertToBaseUnits(
@@ -95,17 +81,6 @@ class SaleController extends Controller
                     'unit_price' => $item['selling_price'],
                     'total_price' => $item['quantity'] * $item['selling_price']
                 ]);
-
-                // 5. Deduct stock (uses StockService)
-                $this->stockService->deductStock(
-                    productId: $item['product_id'],
-                    locationId: $validated['location_id'],
-                    quantity: $item['quantity'],
-                    unitType: $item['unit_type'],
-                    referenceType: Sale::class,
-                    referenceId: $sale->id,
-                    notes: "Sale #{$sale->id}"
-                );
             }
 
             // 6. Handle cheque if payment type is cheque
@@ -209,7 +184,6 @@ class SaleController extends Controller
                     unitType: $item->unit_type,
                     referenceType: Sale::class,
                     referenceId: $sale->id,
-                    notes: "Sale #{$sale->id} cancelled - Stock restored"
                 );
             }
 

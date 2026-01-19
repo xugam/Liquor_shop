@@ -25,4 +25,14 @@ class SaleItem extends Model
     {
         return $this->belongsTo(Sale::class);
     }
+
+    protected static function booted()
+    {
+        parent::boot();
+        static::creating(function (SaleItem $saleItem) {
+            if (!$saleItem->total_price) {
+                $saleItem->total_price = $saleItem->quantity_selected * $saleItem->unit_price;
+            }
+        });
+    }
 }
