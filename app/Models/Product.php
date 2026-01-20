@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Resources\ProductUnitListResource;
 use App\Traits\SlugTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -33,6 +34,11 @@ class Product extends Model implements HasMedia
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    public function units()
+    {
+        return $this->hasMany(ProductUnit::class);
     }
 
 

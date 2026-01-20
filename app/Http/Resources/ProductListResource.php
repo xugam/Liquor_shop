@@ -24,6 +24,8 @@ class ProductListResource extends JsonResource
             'updated_at' => $this->updated_at,
             'brand' => $this->brand->name,
             'category' => $this->category->name,
+            'units' => $this->units,
+
 
         ];
     }

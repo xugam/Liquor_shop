@@ -21,14 +21,17 @@ Route::get('/user', function (Request $request) {
 //Admin panels
 //Route::middleware('auth:sanctum')->group(function () {
 Route::apiResource('products', ProductController::class);
-Route::get('products/{id}/stock', [ProductController::class, 'getStock']);
+Route::post('products/{product}/units', [ProductController::class, 'storeUnit']);
+Route::patch('products/{product}/units/{unit}', [ProductController::class, 'updateUnits']);
+Route::delete('products/{product}/units/{unit}', [ProductController::class, 'destroyUnit']);
+Route::get('products/{product}/stock', [ProductController::class, 'getStock']);
 Route::apiResource('sales', SaleController::class);
 Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
 Route::apiResource('brands', BrandController::class);
 Route::apiResource('categories', CategoryController::class);
-Route::apiResource('product-units', ProductUnitController::class)->except(['show']);
+Route::apiResource('product-units', ProductUnitController::class);
 Route::apiResource('suppliers', SupplierController::class);
-Route::apiResource('locations', LocationController::class)->except(['show']);
+Route::apiResource('locations', LocationController::class);
 
 // Stock Movements
 Route::post('stock/incoming', [StockMovementController::class, 'incoming']); // Add stock - IN

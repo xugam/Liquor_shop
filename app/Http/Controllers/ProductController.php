@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Product\ProductStoreRequest;
+use App\Http\Requests\Product\ProductUnitStoreRequest;
 use App\Http\Resources\ProductListResource;
 use App\Models\Product;
 use App\Models\ProductUnit;
@@ -102,23 +103,26 @@ class ProductController extends Controller
 
     public function store(ProductStoreRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
         DB::beginTransaction();
         try {
-            $product = Product::create($request->validated());
-            foreach ($product->units as $unit) {
-                $unit = ProductUnit::create($unit);
-            }
+            $product = Product::create($data);
+
             if ($request->hasFile('image')) {
                 $product->addMedia($request->file('image'))
                     ->toMediaCollection('product_images');
             }
+            foreach ($data['units'] as $unit) {
+                $unit['product_id'] = $product->id;
+                $unit = ProductUnit::create($unit);
+            }
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             return $this->apiError("Product not created");
         }
-
+        $product = ProductListResource::make($product);
         return $this->apiSuccess("Product created successfully", $product);
     }
 
@@ -140,11 +144,11 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function show($id)
+    public function show(Product $product)
     {
-        $product = Product::find($id);
         if ($product) {
-            return $this->apiSuccess("Product found successfully", $product);
+            $data = ProductListResource::make($product);
+            return $this->apiSuccess("Product found successfully", $data);
         } else {
             return $this->apiError("Product not found");
         }
@@ -238,6 +242,44 @@ class ProductController extends Controller
             return $this->apiSuccess("Product found successfully", $stock);
         } else {
             return $this->apiError("Product not found");
+        }
+    }
+
+    public function storeUnit(ProductUnitStoreRequest $request, Product $product)
+    {
+        // return $product;
+        $data = $request->validated();
+        $data['product_id'] = $product->id;
+        return $product->units()->create($data);
+        return $this->apiSuccess("Unit added successfully");
+    }
+
+    public function updateUnits(Request $request, Product $product, $unit)
+    {
+        return $request->all();
+        $unit = $product->units()->find($unit);
+        if (request()->has('name')) {
+            $unit = $unit->update($request->validated());
+        } elseif (request()->has('conversion_factor')) {
+            $unit = $unit->update($request->validated());
+        } elseif (request()->has('cost_price')) {
+            $unit = $unit->update($request->validated());
+        } elseif (request()->has('selling_price')) {
+            $unit = $unit->update($request->validated());
+        } else {
+            return $this->apiError("Invalid request");
+        }
+        return $this->apiSuccess("Unit updated successfully", $unit);
+    }
+
+    public function destroyUnit(Product $product, $unit)
+    {
+        $unit = $product->units()->find($unit);
+        if ($unit) {
+            $unit->delete();
+            return $this->apiSuccess("Unit deleted successfully");
+        } else {
+            return $this->apiError("Unit not found");
         }
     }
 }
