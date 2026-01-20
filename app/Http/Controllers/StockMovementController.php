@@ -4,22 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Stock\addStockRequest;
 use App\Http\Requests\Stock\TransferStockRequest;
-use App\Models\Location;
-use App\Models\LocationProduct;
-use App\Models\Product;
-use App\Models\ProductUnit;
 use App\Models\StockMovement;
 use App\Services\StockService;
 use App\Traits\ResponseTrait;
-use Illuminate\Http\Request;
 
 class StockMovementController extends Controller
 {
 
     use ResponseTrait;
-
     protected $stockService;
-
     public function __construct(StockService $stockService)
     {
         $this->stockService = $stockService;
@@ -39,7 +32,7 @@ class StockMovementController extends Controller
         if ($stockMovement) {
             return $this->apiSuccess('Stock added successfully', $stockMovement);
         }
-        return $this->apiError('Stock added failed');
+        return $this->apiError('Stock added failed', 400);
     }
 
     public function transfer(TransferStockRequest $request)
@@ -79,7 +72,7 @@ class StockMovementController extends Controller
         if ($stockMovement) {
             return $this->apiSuccess('Stock adjusted successfully', $stockMovement);
         }
-        return $this->apiError('Stock adjusted failed');
+        return $this->apiError('Stock adjusted failed', 400);
     }
 
     public function movements()

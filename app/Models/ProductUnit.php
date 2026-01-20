@@ -27,4 +27,14 @@ class ProductUnit extends Model
     {
         return $quantity * $this->conversion_factor;
     }
+    public function BaseSellingPrice($quantity)
+    {
+        $baseUnit = $this->conversion_factor * $quantity;
+        return $baseUnit * $this->selling_price;
+    }
+    public function BaseCostPrice($quantity)
+    {
+        $baseUnit = $this->conversion_factor * $quantity;
+        return $baseUnit * $this->cost_price;
+    }
 }

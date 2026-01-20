@@ -277,7 +277,7 @@ class ProductController extends Controller
         $unit = $product->units()->find($unit);
         if ($unit) {
             $unit->delete();
-            return $this->apiSuccess("Unit deleted successfully");
+            return $this->apiSuccess("Unit deleted successfully", $unit);
         } else {
             return $this->apiError("Unit not found");
         }

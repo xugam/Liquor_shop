@@ -6,9 +6,7 @@ use App\Http\Requests\CreateSalesRequest;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Cheque;
-use App\Models\Product;
 use App\Models\ProductUnit;
-use App\Models\StockMovement;
 use App\Services\StockService;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -66,9 +64,15 @@ class SaleController extends Controller
             // 4. Process each sale item
             foreach ($validated['items'] as $item) {
                 $productunit = ProductUnit::find($item['unit_id']);
-                $product = Product::find($item['product_id']);
                 // Convert to base units for record keeping
                 $quantityInBaseUnits = $productunit->convertToBaseUnits(
+                    $item['quantity'],
+                    $item['unit_id']
+                );
+
+                $this->stockService->deductStock(
+                    $item['product_id'],
+                    $validated['location_id'],
                     $item['quantity'],
                     $item['unit_id']
                 );
@@ -79,10 +83,10 @@ class SaleController extends Controller
                     'product_id' => $item['product_id'],
                     'unit_id' => $item['unit_id'],
                     'quantity' => $item['quantity'],
-                    'unit_price' => $product->selling_price,
-                    'total_price' => $quantityInBaseUnits * $product->selling_price
+                    'unit_price' => $productunit->selling_price,
+                    'total_price' => $productunit->BaseSellingPrice($item['quantity'])
                 ]);
-                $totalAmount += $quantityInBaseUnits * $product->selling_price;
+                $totalAmount += $productunit->BaseSellingPrice($item['quantity']);
             }
 
             $sale->update([
@@ -106,6 +110,8 @@ class SaleController extends Controller
                     'status' => 'pending'
                 ]);
             }
+
+
 
             DB::commit();
 
