@@ -80,4 +80,13 @@ class StockMovementController extends Controller
         $stockMovements = StockMovement::all();
         return $this->apiSuccess('Stock movements', $stockMovements);
     }
+
+    public function movement($type)
+    {
+        $stockMovements = StockMovement::where('type', $type)->get();
+        if (!$stockMovements->isEmpty()) {
+            return $this->apiSuccess('Stock movements', $stockMovements);
+        }
+        return $this->apiError('Stock movements not found', 404);
+    }
 }

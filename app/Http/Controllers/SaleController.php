@@ -111,8 +111,6 @@ class SaleController extends Controller
                 ]);
             }
 
-
-
             DB::commit();
 
             return response()->json([

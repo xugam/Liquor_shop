@@ -38,6 +38,7 @@ Route::post('stock/incoming', [StockMovementController::class, 'incoming']); // 
 Route::post('stock/transfer', [StockMovementController::class, 'transfer']); // Transfer between locations -TRANSFER
 Route::post('stock/adjustment', [StockMovementController::class, 'adjustment']); // Manual adjustment - ADJUSTMENT
 Route::get('stock/movements', [StockMovementController::class, 'movements']); // History OUT
+Route::get('stock/movements/{type}', [StockMovementController::class, 'movement']); // History OUT
 
 //Stocks Management
 Route::apiResource('location-products', LocationProductController::class);
