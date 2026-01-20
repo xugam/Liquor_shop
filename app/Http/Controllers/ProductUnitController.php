@@ -40,7 +40,12 @@ class ProductUnitController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:30',
+            'slug' => 'required|string|max:30',
             'conversion_factor' => 'required|numeric',
+            'cost_price' => 'required|numeric',
+            'selling_price' => 'required|numeric',
+            'is_base_unit' => 'required|boolean',
+            'product_id' => 'required|exists:products,id',
         ]);
         $productUnit = ProductUnit::create($request->all());
         return $this->apiSuccess("Product unit created successfully", $productUnit);

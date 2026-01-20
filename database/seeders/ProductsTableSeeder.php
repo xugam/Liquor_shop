@@ -17,12 +17,9 @@ class ProductsTableSeeder extends Seeder
             $product = Product::create([
                 'name' => 'Product ' . $i,
                 'slug' => 'product-' . $i,
-                'cost_price' => $i * 10,
-                'selling_price' => $i * 20,
                 'sku' => 'SKU' . $i,
                 'brand_id' => rand(1, 5),
                 'category_id' => rand(1, 5),
-                'base_unit_id' => rand(1, 4),
                 'status' => 'active',
             ]);
             $product->addMedia(public_path('assets/test' . $i . '.jpeg'))->preservingOriginal()

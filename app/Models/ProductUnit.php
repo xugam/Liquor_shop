@@ -10,13 +10,16 @@ class ProductUnit extends Model
     use SlugTrait;
     protected $fillable = [
         'name',
+        'product_id',
         'conversion_factor',
+        'cost_price',
+        'selling_price',
         'slug',
         'is_base_unit',
     ];
-    public function products()
+    public function product()
     {
-        return $this->hasMany(Product::class, 'base_unit_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     // Helper: Convert unit to base

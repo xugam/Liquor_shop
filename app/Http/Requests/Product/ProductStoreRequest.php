@@ -22,14 +22,19 @@ class ProductStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+
             'name' => 'required|string|max:30',
-            'cost_price' => 'required|numeric',
-            'selling_price' => 'required|numeric',
             'category_id' => 'required|numeric',
             'brand_id' => 'required|numeric',
             'status' => 'required|numeric',
-            'base_unit_id' => 'required|numeric',
             'sku' => 'required|string|max:30',
+
+            'units' => 'required|array|min:1',
+            'units.*.name' => 'required|string|max:30',
+            'units.*.cost_price' => 'required|numeric',
+            'units.*.selling_price' => 'required|numeric',
+            'units.*.is_base_unit' => 'required|boolean',
+            'units.*.conversion_factor' => 'required|numeric',
         ];
     }
 }

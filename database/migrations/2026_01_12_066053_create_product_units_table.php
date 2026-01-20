@@ -15,9 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug');
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->decimal('cost_price', 10, 2);
+            $table->decimal('selling_price', 10, 2);
             $table->boolean('is_base_unit')->default(false);
             $table->integer('conversion_factor')->default(1);
             $table->timestamps();
+            $table->unique(['product_id', 'name']);
         });
     }
 

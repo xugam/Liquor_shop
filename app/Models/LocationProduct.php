@@ -11,9 +11,7 @@ class LocationProduct extends Model
         'location_id',
         'quantity',
         'reorder_level'
-
     ];
-
 
 
     public function product()

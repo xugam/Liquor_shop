@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Resources\ProductListResource;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Traits\PaginationTrait;
 use App\Traits\ResponseTrait;
+use Exception;
 use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -102,12 +103,22 @@ class ProductController extends Controller
     public function store(ProductStoreRequest $request)
     {
         $request->validated();
-        $product = Product::create($request->all());
-        if ($request->hasFile('image')) {
-            $product
-                ->addMedia($request->file('image'))
-                ->toMediaCollection('product_images');
+        DB::beginTransaction();
+        try {
+            $product = Product::create($request->validated());
+            foreach ($product->units as $unit) {
+                $unit = ProductUnit::create($unit);
+            }
+            if ($request->hasFile('image')) {
+                $product->addMedia($request->file('image'))
+                    ->toMediaCollection('product_images');
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->apiError("Product not created");
         }
+
         return $this->apiSuccess("Product created successfully", $product);
     }
 

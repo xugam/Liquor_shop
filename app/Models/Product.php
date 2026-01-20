@@ -14,11 +14,8 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'name',
         'slug',
-        'cost_price',
-        'selling_price',
         'category_id',
         'brand_id',
-        'base_unit_id',
         'status',
         'sku'
     ];
@@ -38,10 +35,6 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(Brand::class);
     }
 
-    public function baseUnit()
-    {
-        return $this->belongsTo(ProductUnit::class, 'base_unit_id');
-    }
 
     public function stockMovements()
     {

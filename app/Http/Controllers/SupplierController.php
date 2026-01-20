@@ -29,8 +29,18 @@ class SupplierController extends Controller
         return $this->apiSuccess("Supplier created successfully", $supplier);
     }
 
+    public function show(Supplier $supplier)
+    {
+        if ($supplier) {
+            return $this->apiSuccess("Supplier details", $supplier);
+        } else {
+            return $this->apiError("Supplier not found");
+        }
+    }
+
     public function update(Supplier $supplier, Request $request)
     {
+
         if ($supplier) {
             $supplier->update($request->all());
             return $this->apiSuccess("Supplier updated successfully", $supplier);
