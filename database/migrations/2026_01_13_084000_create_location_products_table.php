@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('location_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('location_id')->constrained()->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained('product_units')->onDelete('cascade');
+            $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');
             $table->decimal('quantity', 10, 2)->default(0); // Current stock in base units
             $table->decimal('reorder_level', 10, 2)->default(0); // For low-stock alerts
             $table->timestamps();
 
             // Ensure one record per product per location
-            $table->unique(['product_id', 'location_id']);
+            $table->unique(['unit_id', 'location_id']);
         });
     }
 

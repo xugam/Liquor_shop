@@ -22,6 +22,7 @@ class StockMovementController extends Controller
     public function incoming(addStockRequest $request)
     {
         $validated = $request->validated();
+        // return $validated;
         $stockMovement = $this->stockService->addStock(
             $validated['product_id'],
             $validated['location_id'],

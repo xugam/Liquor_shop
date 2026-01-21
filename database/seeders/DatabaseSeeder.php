@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-
         $this->call([
             LocationTableSeeder::class,
             CategoryTableSeeder::class,
@@ -21,7 +20,6 @@ class DatabaseSeeder extends Seeder
             ProductUnitTableSeeder::class,
             ProductLocationTableSeeder::class,
             SupplierTableSeeder::class,
-            ProductLocationTableSeeder::class,
         ]);
     }
 }

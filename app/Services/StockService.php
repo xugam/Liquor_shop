@@ -15,7 +15,7 @@ class StockService
      */
     public function addStock($productId, $locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $supplierId = null)
     {
-        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
+        $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
         $productunit = ProductUnit::where('id', $unitType)->first();
         $basequantity = $productunit->convertToBaseUnits($quantity);
         $locationProduct->quantity = $locationProduct->quantity + $basequantity;
@@ -72,6 +72,7 @@ class StockService
             if ($fromlocationProduct == null || $tolocationProduct == null) {
                 throw new \Exception('No stock of that product in that location');
             }
+
 
             $productunit = ProductUnit::where('id', $unitType)->first();
             $basequantity = $productunit->convertToBaseUnits($quantity);

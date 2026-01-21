@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LocationProductController;
 use App\Http\Controllers\ProductController;
@@ -43,7 +44,17 @@ Route::get('stock/movements/{type}', [StockMovementController::class, 'movement'
 //Stocks Management
 Route::apiResource('location-products', LocationProductController::class);
 Route::get('stock-level', [LocationProductController::class, 'stockLevel']);
+Route::get('stock-level/{location}', [LocationProductController::class, 'stockLevelByLocation']);
+
+
+//Cheques
+Route::get('cheques', [ChequeController::class, 'index']);
+Route::get('cheques/pending', [ChequeController::class, 'pendingCheques']);
+
+
 //});
+
+
 
 
 //Admin Only 

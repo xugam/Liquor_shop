@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class LocationProduct extends Model
 {
     protected $fillable = [
-        'product_id',
+        'unit_id',
         'location_id',
         'quantity',
         'reorder_level'
     ];
 
 
-    public function product()
+    public function unit()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductUnit::class);
     }
 
     public function location()

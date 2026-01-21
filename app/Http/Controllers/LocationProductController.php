@@ -18,7 +18,7 @@ class LocationProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'unit_id' => 'required|exists:product_units,id',
             'location_id' => 'required|exists:locations,id',
             'quantity' => 'required|numeric|min:0',
             'reorder_level' => 'required|numeric|min:0',
@@ -27,9 +27,10 @@ class LocationProductController extends Controller
         return $this->apiSuccess('Location Product created successfully', LocationProduct::create($validated));
     }
 
-    public function show(Location $location)
+    public function show($id)
     {
-        return $this->apiSuccess(LocationProduct::where('location_id', $location->id)->get());
+        $location = LocationProduct::where('location_id', $id)->get();
+        return $this->apiSuccess('Location Products', $location);
     }
 
     public function update(Request $request, LocationProduct $locationProduct)
@@ -69,6 +70,19 @@ class LocationProductController extends Controller
             'totalAllowStock' => $totalAllowStock,
             'totalReorderStock' => $totalReorderStock,
             'totalZeroStock' => $totalZeroStock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
+    public function stockLevelByLocation($locationId)
+    {
+        $locationProducts = LocationProduct::where('location_id', $locationId)->get();
+        $stock = 0;
+
+        foreach ($locationProducts as $locationProduct) {
+            $stock += $locationProduct->quantity;
+        }
+        $data = [
+            'stock' => $stock
         ];
         return $this->apiSuccess('Stock Level', $data);
     }
