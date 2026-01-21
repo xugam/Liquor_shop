@@ -13,7 +13,7 @@ class StockService
     /**
      * Add stock to a location
      */
-    public function addStock($productId, $locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $supplierId = null)
+    public function addStock($locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $supplierId = null)
     {
         $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
         $productunit = ProductUnit::where('id', $unitType)->first();
@@ -23,7 +23,7 @@ class StockService
 
         // Record movement
         $stockMovement = StockMovement::create([
-            'product_id' => $productId,
+            'product_id' => $productunit->product_id,
             'product_unit_id' => $unitType,
             'from_location_id' => null,
             'to_location_id' => $locationId,
@@ -38,18 +38,18 @@ class StockService
     /**
      * Deduct stock from a location
      */
-    public function deductStock($productId, $locationId, $quantity, $unitType,  $supplierId = null)
+    public function deductStock($unit_id, $locationId, $quantity,  $supplierId = null)
     {
-        $locationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $locationId)->first();
-        $productunit = ProductUnit::where('id', $unitType)->first();
+        $locationProduct = LocationProduct::where('unit_id', $unit_id)->where('location_id', $locationId)->first();
+        $productunit = ProductUnit::where('id', $unit_id)->first();
         $basequantity = $productunit->convertToBaseUnits($quantity);
         $locationProduct->quantity = $locationProduct->quantity - $basequantity;
         $locationProduct->save();
 
         // Record movement
         $stockMovement = StockMovement::create([
-            'product_id' => $productId,
-            'product_unit_id' => $unitType,
+            'product_id' => $productunit->product_id,
+            'product_unit_id' => $unit_id,
             'from_location_id' => $locationId,
             'to_location_id' => null,
             'supplier_id' => $supplierId,
@@ -104,9 +104,9 @@ class StockService
     /**
      * Get current stock at location
      */
-    public function getStock($productId, $locationId)
+    public function getStock($unit_id, $locationId)
     {
-        $stock = LocationProduct::where('product_id', $productId)
+        $stock = LocationProduct::where('unit_id', $unit_id)
             ->where('location_id', $locationId)
             ->first();
 
@@ -116,12 +116,12 @@ class StockService
     /**
      * Check if stock is available
      */
-    public function checkAvailability($productId, $locationId, $quantity, $unitType)
+    public function checkAvailability($unit_id, $locationId, $quantity)
     {
-        $productunit = ProductUnit::where('id', $unitType)->first();
+        $productunit = ProductUnit::where('id', $unit_id)->first();
 
         $basequantity = $productunit->convertToBaseUnits($quantity);
-        $currentStock = $this->getStock($productId, $locationId);
+        $currentStock = $this->getStock($unit_id, $locationId);
 
         if ($currentStock < $basequantity) {
             return [

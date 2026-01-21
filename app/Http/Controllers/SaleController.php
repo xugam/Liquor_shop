@@ -30,101 +30,99 @@ class SaleController extends Controller
     {
         $validated = $request->validated();
 
-        DB::beginTransaction();
-        try {
-            // 1. Check stock availability for all items FIRST
-            foreach ($validated['items'] as $item) {
+        // DB::beginTransaction();
+        // try {
+        // 1. Check stock availability for all items FIRST
+        foreach ($validated['items'] as $item) {
 
-                $availability = $this->stockService->checkAvailability(
-                    $item['product_id'],
-                    $validated['location_id'],
-                    $item['quantity'],
-                    $item['unit_id']
+            $availability = $this->stockService->checkAvailability(
+                $item['unit_id'],
+                $validated['location_id'],
+                $item['quantity']
+            );
+
+            if ($availability['available'] == false) {
+                throw new \Exception(
+                    "Insufficient stock for product ID {$item['product_id']}. " .
+                        "Available: {$availability['current_stock']}, " .
+                        "Requested: {$availability['requested']}"
                 );
-
-                if ($availability['available'] == false) {
-                    throw new \Exception(
-                        "Insufficient stock for product ID {$item['product_id']}. " .
-                            "Available: {$availability['current_stock']}, " .
-                            "Requested: {$availability['requested']}"
-                    );
-                }
             }
-
-            // 2. Calculate total amount
-            $totalAmount = 0;
-
-            // 3. Create sale record
-            $sale = Sale::create([
-                'location_id' => $validated['location_id'],
-                'payment_type' => $validated['payment_type'],
-                'total_amount' => $totalAmount,
-            ]);
-
-            // 4. Process each sale item
-            foreach ($validated['items'] as $item) {
-                $productunit = ProductUnit::find($item['unit_id']);
-                // Convert to base units for record keeping
-                $quantityInBaseUnits = $productunit->convertToBaseUnits(
-                    $item['quantity'],
-                    $item['unit_id']
-                );
-
-                $this->stockService->deductStock(
-                    $item['product_id'],
-                    $validated['location_id'],
-                    $item['quantity'],
-                    $item['unit_id']
-                );
-
-                // Create sale item
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'unit_id' => $item['unit_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $productunit->selling_price,
-                    'total_price' => $productunit->BaseSellingPrice($item['quantity'])
-                ]);
-                $totalAmount += $productunit->BaseSellingPrice($item['quantity']);
-            }
-
-            $sale->update([
-                'total_amount' => $totalAmount,
-            ]);
-            $sale->save();
-
-            // 6. Handle cheque if payment type is cheque
-            if ($validated['payment_type'] === 'cheque') {
-                $reminderDate = Carbon::parse($validated['cheque']['cashable_date'])->subDay();
-
-                Cheque::create([
-                    'sale_id' => $sale->id,
-                    'customer_name' => $validated['cheque']['customer_name'],
-                    'bank_name' => $validated['cheque']['bank_name'],
-                    'cheque_number' => $validated['cheque']['cheque_number'],
-                    'amount' => $validated['cheque']['amount'],
-                    'cheque_date' => $validated['cheque']['cheque_date'],
-                    'cashable_date' => $validated['cheque']['cashable_date'],
-                    'reminder_date' => $reminderDate,
-                    'status' => 'pending'
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Sale completed successfully',
-                'sale_id' => $sale->id,
-                'total_amount' => $totalAmount,
-                'sale' => $sale->load('items.product', 'cheque')
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 400);
         }
+
+        // 2. Calculate total amount
+        $totalAmount = 0;
+
+        // 3. Create sale record
+        $sale = Sale::create([
+            'location_id' => $validated['location_id'],
+            'payment_type' => $validated['payment_type'],
+            'total_amount' => $totalAmount,
+        ]);
+
+        // 4. Process each sale item
+        foreach ($validated['items'] as $item) {
+            $productunit = ProductUnit::find($item['unit_id']);
+            // Convert to base units for record keeping
+            $quantityInBaseUnits = $productunit->convertToBaseUnits(
+                $item['quantity'],
+                $item['unit_id']
+            );
+
+            return $this->stockService->deductStock(
+                $item['unit_id'],
+                $validated['location_id'],
+                $item['quantity']
+            );
+
+            // Create sale item
+            SaleItem::create([
+                'sale_id' => $sale->id,
+                'product_id' => $item['product_id'],
+                'unit_id' => $item['unit_id'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $productunit->selling_price,
+                'total_price' => $productunit->BaseSellingPrice($item['quantity'])
+            ]);
+            $totalAmount += $productunit->BaseSellingPrice($item['quantity']);
+        }
+
+        $sale->update([
+            'total_amount' => $totalAmount,
+        ]);
+        $sale->save();
+
+        // 6. Handle cheque if payment type is cheque
+        if ($validated['payment_type'] === 'cheque') {
+            $reminderDate = Carbon::parse($validated['cheque']['cashable_date'])->subDay();
+
+            Cheque::create([
+                'sale_id' => $sale->id,
+                'customer_name' => $validated['cheque']['customer_name'],
+                'bank_name' => $validated['cheque']['bank_name'],
+                'cheque_number' => $validated['cheque']['cheque_number'],
+                'amount' => $validated['cheque']['amount'],
+                'cheque_date' => $validated['cheque']['cheque_date'],
+                'cashable_date' => $validated['cheque']['cashable_date'],
+                'reminder_date' => $reminderDate,
+                'status' => 'pending'
+            ]);
+        }
+
+        //     DB::commit();
+
+        //     return response()->json([
+        //         'message' => 'Sale completed successfully',
+        //         'sale_id' => $sale->id,
+        //         'total_amount' => $totalAmount,
+        //         'sale' => $sale->load('items.product', 'cheque')
+        //     ], 201);
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     return response()->json([
+        //         'error' => $e->getMessage()
+        //     ], 400);
+        // }
     }
 
     /**
