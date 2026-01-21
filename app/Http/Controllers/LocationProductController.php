@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Location;
 use App\Models\LocationProduct;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
