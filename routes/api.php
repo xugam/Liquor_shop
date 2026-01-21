@@ -42,6 +42,7 @@ Route::get('stock/movements/{type}', [StockMovementController::class, 'movement'
 
 //Stocks Management
 Route::apiResource('location-products', LocationProductController::class);
+Route::get('stock-level', [LocationProductController::class, 'stockLevel']);
 //});
 
 

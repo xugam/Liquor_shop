@@ -49,4 +49,27 @@ class LocationProductController extends Controller
         $locationProduct->delete();
         return $this->apiSuccess('Location Product deleted successfully');
     }
+
+    public function stockLevel()
+    {
+        $locationProducts = LocationProduct::all();
+        $totalAllowStock = 0;
+        $totalReorderStock = 0;
+        $totalZeroStock = 0;
+        foreach ($locationProducts as $locationProduct) {
+            if ($locationProduct->quantity > $locationProduct->reorder_level) {
+                $totalAllowStock += 1;
+            } elseif ($locationProduct->quantity == 0) {
+                $totalZeroStock += 1;
+            } else {
+                $totalReorderStock += 1;
+            }
+        }
+        $data = [
+            'totalAllowStock' => $totalAllowStock,
+            'totalReorderStock' => $totalReorderStock,
+            'totalZeroStock' => $totalZeroStock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
 }
