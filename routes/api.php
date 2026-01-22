@@ -11,6 +11,7 @@ use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -25,10 +26,13 @@ Route::middleware('auth:sanctum')->get('/email/verify', function (Request $reque
 })->name('verification.notice');
 
 // Verify email
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
+Route::get('/email/verify/{id}/{hash}', function (Request $request) {
+    $user = User::find($request->id);
+    $user->forceFill([
+        'email_verified_at' => now(),
+    ])->save();
     return response()->json(['message' => 'Email verified successfully']);
-})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
+})->middleware(['signed'])->name('verification.verify');
 
 // Resend verification email
 Route::middleware(['auth:sanctum'])->post('/email/resend', function (Request $request) {
@@ -75,12 +79,11 @@ Route::get('stock-level/{location}', [LocationProductController::class, 'stockLe
 //Cheques
 Route::get('cheques', [ChequeController::class, 'index']);
 Route::get('cheques/pending', [ChequeController::class, 'pendingCheques']);
-
-
 //});
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('sales', SaleController::class)->middleware('role:admin,user');
-    Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel'])->middleware('role:admin,user');
+
+Route::middleware('auth:sanctum', 'role:admin', 'verified.api')->group(function () {
+    Route::apiResource('sales', SaleController::class);
+    Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
 });
 
 

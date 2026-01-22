@@ -32,12 +32,26 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
+        $per_page = $request->input('per_page', 10);
         $search = $request->input('search');
+        $category = $request->input('category');
+        $brand = $request->input('brand');
+        $query = Product::with('brand', 'category', 'units');
+
         if ($search) {
-            $product = Product::where('name', 'like', "%{$search}%")->paginate($this->perPage($request));
-        } else {
-            $product = Product::paginate($this->perPage($request));
+            $product = $query->where('name', 'like', "%{$search}%");
         }
+        if ($category) {
+            $product = $query->wherehas('category', function ($query) use ($category) {
+                $query->where('name', 'like', "%{$category}%");
+            });
+        }
+        if ($brand) {
+            $product = $query->wherehas('brand', function ($query) use ($brand) {
+                $query->where('name', 'like', "%{$brand}%");
+            });
+        }
+        $product = $query->paginate($per_page);
         if (!$product->isEmpty()) {
             $data = ProductListResource::collection($product);
             return $this->apiSuccess("Product list", $data);

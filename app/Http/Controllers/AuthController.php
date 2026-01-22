@@ -43,10 +43,10 @@ class AuthController extends Controller
      */
     public function register(UserRegisterRequest $request)
     {
-
         $data = $request->validated();
         $data['role'] = 'user';
         $user = User::create($data);
+        $user->sendEmailVerificationNotification();
         $token = $user->createToken('auth_token')->plainTextToken;
         return $this->apiSuccess("User registered successfully", $user, $token);
     }
@@ -83,8 +83,9 @@ class AuthController extends Controller
         if (!Hash::check($credentials['password'], $user->password)) {
             return $this->apiError("Invalid credentials");
         }
+        $user->FCM_token = $request['FCM_token'];
+        $user->save();
         $token = $user->createToken('auth_token')->plainTextToken;
-
         $user->email_verified_at = $user->hasVerifiedEmail();
         return $this->apiSuccess("User login successfully", $user, $token);
     }
