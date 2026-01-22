@@ -12,7 +12,32 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+// Send verification email
+Route::middleware('auth:sanctum')->get('/email/verify', function (Request $request) {
+    return response()->json([
+        'message' => 'Email not verified',
+        'verification_url' => $request->user()->verificationUrl()
+    ]);
+})->name('verification.notice');
+
+// Verify email
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return response()->json(['message' => 'Email verified successfully']);
+})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
+
+// Resend verification email
+Route::middleware(['auth:sanctum'])->post('/email/resend', function (Request $request) {
+    if ($request->user()->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email already verified']);
+    }
+    $request->user()->sendEmailVerificationNotification();
+    return response()->json(['message' => 'Verification link sent']);
+})->name('verification.resend');
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -26,8 +51,8 @@ Route::post('products/{product}/units', [ProductController::class, 'storeUnit'])
 Route::patch('products/{product}/units/{unit}', [ProductController::class, 'updateUnits']);
 Route::delete('products/{product}/units/{unit}', [ProductController::class, 'destroyUnit']);
 Route::get('products/{product}/stock', [ProductController::class, 'getStock']);
-Route::apiResource('sales', SaleController::class);
-Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
+// Route::apiResource('sales', SaleController::class);
+// Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
 Route::apiResource('brands', BrandController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('product-units', ProductUnitController::class);
@@ -53,11 +78,24 @@ Route::get('cheques/pending', [ChequeController::class, 'pendingCheques']);
 
 
 //});
-
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('sales', SaleController::class)->middleware('role:admin,user');
+    Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel'])->middleware('role:admin,user');
+});
 
 
 //Admin Only 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+
+
+Route::get('test-mail', function () {
+    Mail::raw('Mailtrap is working 🎉', function ($message) {
+        $message->to('test@example.com')
+            ->subject('Mailtrap Test');
+    });
+
+    return 'Mail sent';
+});

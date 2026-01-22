@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('payment_type', ['cash', 'cheque'])->default('cash');
             $table->decimal('total_amount', 10, 2);
             $table->enum('status', ['completed', 'pending', 'cancelled'])->default('completed');
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

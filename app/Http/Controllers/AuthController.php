@@ -45,8 +45,10 @@ class AuthController extends Controller
     {
 
         $data = $request->validated();
-        User::create($data);
-        return $this->apiSuccess("User registered successfully");
+        $data['role'] = 'user';
+        $user = User::create($data);
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return $this->apiSuccess("User registered successfully", $user, $token);
     }
 
     /**
@@ -81,9 +83,10 @@ class AuthController extends Controller
         if (!Hash::check($credentials['password'], $user->password)) {
             return $this->apiError("Invalid credentials");
         }
-
         $token = $user->createToken('auth_token')->plainTextToken;
-        return $this->apiSuccess("User login successfully", $credentials, $token);
+
+        $user->email_verified_at = $user->hasVerifiedEmail();
+        return $this->apiSuccess("User login successfully", $user, $token);
     }
 
     /**

@@ -10,8 +10,8 @@ class Sale extends Model
         'location_id',
         'payment_type',
         'total_amount',
-        'status'
-
+        'status',
+        'user_id',
     ];
     public function items()
     {
@@ -24,5 +24,9 @@ class Sale extends Model
     public function cheque()
     {
         return $this->hasOne(Cheque::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
