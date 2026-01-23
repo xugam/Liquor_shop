@@ -26,7 +26,8 @@ class addStockRequest extends FormRequest
             'location_id' => 'required|exists:locations,id',
             'quantity' => 'required|numeric|min:0',
             'unit_id' => 'required|exists:product_units,id', // Bottle/Carton/Pack
-            'supplier_id' => 'nullable|exists:suppliers,id'
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'remarks' => 'nullable|string',
         ];
     }
 }

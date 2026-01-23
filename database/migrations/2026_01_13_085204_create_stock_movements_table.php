@@ -25,6 +25,7 @@ return new class extends Migration
 
 
             $table->enum('type', ['IN', 'OUT', 'TRANSFER', 'ADJUSTMENT']);
+            $table->string('remarks')->nullable();
             $table->decimal('quantity', 12, 3);
             $table->timestamps();
         });

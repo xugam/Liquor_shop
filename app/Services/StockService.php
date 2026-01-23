@@ -13,7 +13,7 @@ class StockService
     /**
      * Add stock to a location
      */
-    public function addStock($locationId, $quantity, $unitType, $referenceType = null, $referenceId = null, $supplierId = null)
+    public function addStock($productId, $locationId, $quantity, $unitType, $supplierId = null, $remarks = null)
     {
         $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
         $productunit = ProductUnit::where('id', $unitType)->first();
@@ -30,6 +30,7 @@ class StockService
             'supplier_id' => $supplierId,
             'quantity' => $basequantity,
             'type' => 'IN',
+            'remarks' => $remarks
         ]);
 
         return $stockMovement;
@@ -38,23 +39,24 @@ class StockService
     /**
      * Deduct stock from a location
      */
-    public function deductStock($unit_id, $locationId, $quantity,  $supplierId = null)
+    public function deductStock($productId, $locationId, $quantity, $unitType, $supplierId = null, $remarks = null)
     {
-        $locationProduct = LocationProduct::where('unit_id', $unit_id)->where('location_id', $locationId)->first();
-        $productunit = ProductUnit::where('id', $unit_id)->first();
+        $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
+        $productunit = ProductUnit::where('id', $unitType)->first();
         $basequantity = $productunit->convertToBaseUnits($quantity);
         $locationProduct->quantity = $locationProduct->quantity - $basequantity;
         $locationProduct->save();
 
         // Record movement
         $stockMovement = StockMovement::create([
-            'product_id' => $productunit->product_id,
-            'product_unit_id' => $unit_id,
+            'product_id' => $productId,
+            'product_unit_id' => $unitType,
             'from_location_id' => $locationId,
             'to_location_id' => null,
             'supplier_id' => $supplierId,
             'quantity' => $basequantity,
             'type' => 'OUT',
+            'remarks' => $remarks
         ]);
 
         return $stockMovement;
@@ -63,7 +65,7 @@ class StockService
     /**
      * Transfer stock between locations
      */
-    public function transferStock($productId, $fromLocationId, $toLocationId, $quantity, $unitType, $supplierId = null)
+    public function transferStock($productId, $fromLocationId, $toLocationId, $quantity, $unitType, $supplierId = null, $remarks = null)
     {
         DB::beginTransaction();
         try {
@@ -92,6 +94,7 @@ class StockService
                 'supplier_id' => $supplierId,
                 'quantity' => $basequantity,
                 'type' => 'TRANSFER',
+                'remarks' => $remarks
             ]);
             DB::commit();
             return $stockMovement;

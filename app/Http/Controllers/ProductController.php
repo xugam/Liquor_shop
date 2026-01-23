@@ -54,7 +54,7 @@ class ProductController extends Controller
         $product = $query->paginate($per_page);
         if (!$product->isEmpty()) {
             $data = ProductListResource::collection($product);
-            return $this->apiSuccess("Product list", $data);
+            return $this->apiSuccessPaginated("Product list", $data);
         } else {
             return $this->apiError("Product not found");
         }

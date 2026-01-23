@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('cheque_date');
             $table->date('cashable_date');
             $table->date('reminder_date');
+            $table->string('phone_no');
             $table->enum('status', ['pending', 'deposited', 'cleared', 'bounced'])->default('pending');
             $table->timestamps();
         });

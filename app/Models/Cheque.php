@@ -14,6 +14,7 @@ class Cheque extends Model
       'cheque_date',
       'cashable_date',
       'reminder_date',
+      'phone_no',
       'status',
    ];
 

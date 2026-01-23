@@ -14,6 +14,8 @@ class Location extends Model
         'type',
         'slug',
         'address',
+        'phone',
+        'additional_info',
         'created_at',
         'updated_at',
     ];

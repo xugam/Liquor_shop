@@ -27,6 +27,7 @@ class LocationTableSeeder extends Seeder
                 'slug' => str($name)->slug(),
                 'type' => 'warehouse',
                 'address' => '123 Main St',
+                'phone_no' => '1234567890',
             ]);
         }
     }

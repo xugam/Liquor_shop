@@ -17,7 +17,6 @@ class ChequeController extends Controller
         $per_page = $request->input('per_page', 10);
         $status = $request->input('status');
         $query = Cheque::query();
-        // return $status;
         if ($status) {
             $cheques = $query->where('status', $status)->get();
         }

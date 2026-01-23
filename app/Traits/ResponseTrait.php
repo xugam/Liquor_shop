@@ -7,6 +7,7 @@ trait ResponseTrait
     public function apiSuccess(string $message = 'Request successful',  array|object|null $data = null, string $token = null,  int $statusCode = 200)
     {
         if ($token) {
+
             return response()->json([
                 'message' => $message,
                 'token' => $token,
@@ -20,6 +21,28 @@ trait ResponseTrait
                 'success' => true,
             ], $statusCode);
         }
+    }
+    protected function apiSuccessPaginated(string $message = 'Request successful', array|object|null $paginatedData, int $statusCode = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $paginatedData->items(),
+            'pagination' => [
+                'total' => $paginatedData->total(),
+                'per_page' => $paginatedData->perPage(),
+                'current_page' => $paginatedData->currentPage(),
+                'last_page' => $paginatedData->lastPage(),
+                'from' => $paginatedData->firstItem(),
+                'to' => $paginatedData->lastItem(),
+            ],
+            'links' => [
+                'first' => $paginatedData->url(1),
+                'last' => $paginatedData->url($paginatedData->lastPage()),
+                'prev' => $paginatedData->previousPageUrl(),
+                'next' => $paginatedData->nextPageUrl(),
+            ]
+        ], $statusCode);
     }
 
     public function apiError(string $message = 'An error occurred', string $token = null, int $statusCode = 422, $errors = null)

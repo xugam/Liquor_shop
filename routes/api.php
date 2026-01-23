@@ -75,6 +75,7 @@ Route::get('stock/movements/{type}', [StockMovementController::class, 'movement'
 Route::apiResource('location-products', LocationProductController::class);
 Route::get('stock-level', [LocationProductController::class, 'stockLevel']);
 Route::get('stock-level/{location}', [LocationProductController::class, 'stockLevelByLocation']);
+Route::get('stock-level/{product}', [LocationProductController::class, 'stockLevelByProduct']);
 
 //Cart
 Route::apiResource('cart', CartItemController::class)->middleware('auth:sanctum');

@@ -16,25 +16,33 @@ class CategoryController extends Controller
     use PaginationTrait;
     public function index(Request $request)
     {
-        $category = Category::paginate($this->perPage($request));
-        $data = CategoryListResource::collection($category);
-        return $this->apiSuccess("Category list", $data);
+        $search = $request->input('search');
+        $per_page = $request->input('per_page', 10);
+        $query = Category::query();
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        return $this->apiSuccessPaginated("Category list", CategoryListResource::collection($query->paginate($per_page)));
     }
 
     //show products by specific category
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $category = Category::find($id);
+
         if ($category) {
-            $collection = ProductListResource::collection(Product::where('category_id', $id)->get());
+            $search = $request->input('search');
+            $per_page = $request->input('per_page', 10);
+            // return $search;
+            $query = Product::with('brand', 'category');
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            }
+            $collection = ProductListResource::collection($query->where('category_id', $id)->paginate($per_page));
             if ($collection->isEmpty()) {
                 return $this->apiError("No product found in this category");
             }
-            $data = $collection->toArray(request());
-            foreach ($data as &$item) {
-                unset($item['category']);
-            }
-            return $this->apiSuccess("Category found successfully", $data);
+            return $this->apiSuccessPaginated("Category found successfully", $collection);
         } else {
             return $this->apiError("Category not found");
         }

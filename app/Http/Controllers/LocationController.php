@@ -22,6 +22,7 @@ class LocationController extends Controller
             'type' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'additional_info' => 'nullable|string',
+            'phone_no' => 'nullable|string|in:10',
         ]);
         $location = Location::create($request->all());
         return $this->apiSuccess("Location created successfully", $location);

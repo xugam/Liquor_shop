@@ -30,6 +30,7 @@ class ChequeStoreRequest extends FormRequest
             'cheque_date' => 'required|date',
             'cashable_date' => 'required|date',
             'reminder_date' => 'required|date',
+            'phone_no' => 'required|string|min:10|max:10',
             'status' => 'nullable|in:pending,deposited,cleared,bounced',
         ];
     }

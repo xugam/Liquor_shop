@@ -72,6 +72,31 @@ class LocationProductController extends Controller
         ];
         return $this->apiSuccess('Stock Level', $data);
     }
+
+    public function getStockByProduct($productId)
+    {
+        $locationProducts = LocationProduct::where('product_id', $productId)->get();
+        $stock = 0;
+        foreach ($locationProducts as $locationProduct) {
+            $stock += $locationProduct->quantity;
+        }
+        $data = [
+            'stock' => $stock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
+    public function getTotalStockOfProduct()
+    {
+        $locationProducts = LocationProduct::all();
+        $stock = 0;
+        foreach ($locationProducts as $locationProduct) {
+            $stock += $locationProduct->quantity;
+        }
+        $data = [
+            'stock' => $stock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
     public function stockLevelByLocation($locationId)
     {
         $locationProducts = LocationProduct::where('location_id', $locationId)->get();

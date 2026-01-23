@@ -21,13 +21,15 @@ class StockMovementController extends Controller
     //IN
     public function incoming(addStockRequest $request)
     {
+
         $validated = $request->validated();
-        // return $validated;
         $stockMovement = $this->stockService->addStock(
             $validated['product_id'],
             $validated['location_id'],
             $validated['quantity'],
-            $validated['unit_id']
+            $validated['unit_id'],
+            $validated['supplier_id'] ?? null,
+            $validated['remarks'] ?? null
         );
 
         if ($stockMovement) {
@@ -48,7 +50,8 @@ class StockMovementController extends Controller
             $validated['from_location_id'],
             $validated['to_location_id'],
             $validated['quantity'],
-            $validated['unit_id']
+            $validated['unit_id'],
+            $validated['remarks'] ?? null
         );
 
         if ($stockMovement) {
@@ -67,7 +70,9 @@ class StockMovementController extends Controller
             $validated['product_id'],
             $validated['location_id'],
             $validated['quantity'],
-            $validated['unit_id']
+            $validated['unit_id'],
+            $validated['supplier_id'] ?? null,
+            $validated['remarks'] ?? null
         );
 
         if ($stockMovement) {
