@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateSalesRequest extends FormRequest
+class ChequeStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,14 +23,14 @@ class CreateSalesRequest extends FormRequest
     {
         return [
 
-            'items' => 'required|array|min:1',
-            'items.*.location_id' => 'required|exists:locations,id',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.unit_id' => 'required|exists:product_units,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'nullable|numeric|min:1'
-
-
+            'customer_name' => 'required|string',
+            'bank_name' => 'required|string',
+            'cheque_number' => 'required|string',
+            'amount' => 'required|numeric',
+            'cheque_date' => 'required|date',
+            'cashable_date' => 'required|date',
+            'reminder_date' => 'required|date',
+            'status' => 'nullable|in:pending,deposited,cleared,bounced',
         ];
     }
 }

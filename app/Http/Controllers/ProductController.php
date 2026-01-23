@@ -36,7 +36,7 @@ class ProductController extends Controller
         $search = $request->input('search');
         $category = $request->input('category');
         $brand = $request->input('brand');
-        $query = Product::with('brand', 'category', 'units');
+        $query = Product::with('brand', 'category', 'units.stock');
 
         if ($search) {
             $product = $query->where('name', 'like', "%{$search}%");
@@ -120,7 +120,15 @@ class ProductController extends Controller
         $data = $request->validated();
         DB::beginTransaction();
         try {
-            $product = Product::create($data);
+            // Load category and brand for SKU generation
+            $category = \App\Models\Category::find($data['category_id']);
+            $brand = \App\Models\Brand::find($data['brand_id']);
+
+            // Create product with relationships loaded for SKU generation
+            $product = new Product($data);
+            $product->category()->associate($category);
+            $product->brand()->associate($brand);
+            $product->save();
 
             if ($request->hasFile('image')) {
                 $product->addMedia($request->file('image'))

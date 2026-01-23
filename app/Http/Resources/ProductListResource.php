@@ -14,6 +14,7 @@ class ProductListResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -24,9 +25,16 @@ class ProductListResource extends JsonResource
             'updated_at' => $this->updated_at,
             'brand' => $this->brand->name,
             'category' => $this->category->name,
-            'units' => $this->units,
+            'units' => $this->units->map(function ($unit) {
+                return [
+                    'name' => $unit['name'],
+                    'id' => $unit["id"],
+                    'cost_price' => $unit["cost_price"],
+                    'selling_price' => $unit["selling_price"],
 
-
+                    'stock' => $unit->stock->sum('quantity')
+                ];
+            }),
         ];
     }
 }

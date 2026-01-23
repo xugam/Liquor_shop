@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\LocationController;
@@ -75,9 +76,13 @@ Route::apiResource('location-products', LocationProductController::class);
 Route::get('stock-level', [LocationProductController::class, 'stockLevel']);
 Route::get('stock-level/{location}', [LocationProductController::class, 'stockLevelByLocation']);
 
+//Cart
+Route::apiResource('cart', CartItemController::class)->middleware('auth:sanctum');
 
 //Cheques
 Route::get('cheques', [ChequeController::class, 'index']);
+Route::post('cheques', [ChequeController::class, 'store']);
+Route::patch('cheques/{cheque}', [ChequeController::class, 'update']);
 Route::get('cheques/pending', [ChequeController::class, 'pendingCheques']);
 //});
 
@@ -91,14 +96,3 @@ Route::middleware('auth:sanctum', 'role:admin', 'verified.api')->group(function 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-
-
-
-Route::get('test-mail', function () {
-    Mail::raw('Mailtrap is working 🎉', function ($message) {
-        $message->to('test@example.com')
-            ->subject('Mailtrap Test');
-    });
-
-    return 'Mail sent';
-});

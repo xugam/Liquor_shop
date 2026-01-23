@@ -27,7 +27,7 @@ class ProductStoreRequest extends FormRequest
             'category_id' => 'required|numeric',
             'brand_id' => 'required|numeric',
             'status' => 'required|numeric',
-            'sku' => 'required|string|max:30',
+            'sku' => 'nullable|string|max:30|unique:products,sku',
 
             'units' => 'required|array|min:1',
             'units.*.name' => 'required|string|max:30',

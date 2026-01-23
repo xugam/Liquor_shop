@@ -65,16 +65,12 @@ class SaleController extends Controller
             // 4. Process each sale item
             foreach ($validated['items'] as $item) {
                 $productunit = ProductUnit::find($item['unit_id']);
-                // Convert to base units for record keeping
-                $quantityInBaseUnits = $productunit->convertToBaseUnits(
-                    $item['quantity'],
-                    $item['unit_id']
-                );
 
-                $this->stockService->addStock(
+                // Deduct stock from location
+                $this->stockService->deductStock(
+                    $item['unit_id'],
                     $item['location_id'],
-                    $item['quantity'],
-                    $item['unit_id']
+                    $item['quantity']
                 );
 
                 $unit_price = $item['unit_price'] ? $item['unit_price'] : $productunit->selling_price;
@@ -95,23 +91,6 @@ class SaleController extends Controller
                 'total_amount' => $totalAmount,
             ]);
             $sale->save();
-
-            // // 6. Handle cheque if payment type is cheque
-            // if ($validated['payment_type'] === 'cheque') {
-            //     $reminderDate = Carbon::parse($validated['cheque']['cashable_date'])->subDay();
-
-            //     Cheque::create([
-            //         'sale_id' => $sale->id,
-            //         'customer_name' => $validated['cheque']['customer_name'],
-            //         'bank_name' => $validated['cheque']['bank_name'],
-            //         'cheque_number' => $validated['cheque']['cheque_number'],
-            //         'amount' => $validated['cheque']['amount'],
-            //         'cheque_date' => $validated['cheque']['cheque_date'],
-            //         'cashable_date' => $validated['cheque']['cashable_date'],
-            //         'reminder_date' => $reminderDate,
-            //         'status' => 'pending'
-            //     ]);
-            // }
 
             DB::commit();
 
@@ -134,7 +113,7 @@ class SaleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Sale::with(['items.product', 'location', 'cheque']);
+        $query = Sale::with(['items.product', 'cheque']);
 
         // Filters
         if ($request->location_id) {
@@ -187,9 +166,9 @@ class SaleController extends Controller
             $saleItem = SaleItem::where('sale_id', $sale->id)->get();
 
             foreach ($saleItem as $item) {
+                // Restore stock back to location
                 $this->stockService->addStock(
-                    $item->product_id,
-                    $sale->location_id,
+                    $item->location_id,
                     $item->quantity,
                     $item->unit_id
                 );

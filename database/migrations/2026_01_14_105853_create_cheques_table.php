@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('cheques', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->constrained('sales')->cascadeOnDelete();
             $table->string('customer_name');
             $table->string('cheque_number')->unique();
             $table->string('bank_name');

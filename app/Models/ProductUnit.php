@@ -21,7 +21,10 @@ class ProductUnit extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
-
+    public function stock()
+    {
+        return $this->hasMany(LocationProduct::class, 'unit_id');
+    }
     // Helper: Convert unit to base
     public function convertToBaseUnits($quantity)
     {

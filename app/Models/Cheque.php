@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Cheque extends Model
 {
    protected $fillable = [
-      'sale_id',
       'customer_name',
       'cheque_number',
       'bank_name',

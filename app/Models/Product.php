@@ -21,6 +21,47 @@ class Product extends Model implements HasMedia
         'sku'
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($product) {
+            // Only generate SKU if not provided
+            if (empty($product->sku)) {
+                $product->sku = static::generateSKU($product);
+            }
+        });
+    }
+
+    /**
+     * Generate a unique SKU for the product
+     * Format: {CATEGORY_CODE}-{BRAND_CODE}-{NUMBER}
+     * Example: WHI-JAC-001
+     */
+    protected static function generateSKU($product)
+    {
+        // Get category and brand codes (first 3 letters, uppercase)
+        $categoryCode = strtoupper(substr($product->category->name ?? 'PRD', 0, 3));
+        $brandCode = strtoupper(substr($product->brand->name ?? 'GEN', 0, 3));
+
+        // Find the next sequence number for this category-brand combination
+        $prefix = "{$categoryCode}-{$brandCode}-";
+        $lastProduct = static::where('sku', 'like', $prefix . '%')
+            ->orderBy('sku', 'desc')
+            ->first();
+
+        if ($lastProduct) {
+            // Extract the number from the last SKU and increment
+            $lastNumber = (int) substr($lastProduct->sku, -3);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        // Format: {CATEGORY}-{BRAND}-{001}
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('product_images')->useDisk('public');
