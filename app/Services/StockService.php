@@ -15,42 +15,59 @@ class StockService
      */
     public function addStock($productId, $locationId, $quantity, $unitType, $supplierId = null, $remarks = null)
     {
-        $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
-        $productunit = ProductUnit::where('id', $unitType)->first();
-        $basequantity = $productunit->convertToBaseUnits($quantity);
-        $locationProduct->quantity = $locationProduct->quantity + $basequantity;
-        $locationProduct->save();
+        $unit = ProductUnit::where('product_id', $productId)->where('name', $unitType)->first();
+        DB::beginTransaction();
+        try {
+            $locationProduct = LocationProduct::where('unit_id', $unit->id)->where('location_id', $locationId)->first();
+            if ($locationProduct == null) {
+                $locationProduct = LocationProduct::create([
+                    'location_id' => $locationId,
+                    'product_id' => $productId,
+                    'unit_id' => $unit->id,
+                    'quantity' => 0,
+                    'reorder_level' => 10
+                ]);
+            }
+            $productunit = ProductUnit::where('id', $unit->id)->first();
+            $basequantity = $productunit->convertToBaseUnits($quantity);
+            $locationProduct->quantity = $locationProduct->quantity + $basequantity;
+            $locationProduct->save();
 
-        // Record movement
-        $stockMovement = StockMovement::create([
-            'product_id' => $productunit->product_id,
-            'product_unit_id' => $unitType,
-            'from_location_id' => null,
-            'to_location_id' => $locationId,
-            'supplier_id' => $supplierId,
-            'quantity' => $basequantity,
-            'type' => 'IN',
-            'remarks' => $remarks
-        ]);
+            // Record movement
+            $stockMovement = StockMovement::create([
+                'product_id' => $productunit->product_id,
+                'product_unit_id' => $unit->id,
+                'from_location_id' => null,
+                'to_location_id' => $locationId,
+                'supplier_id' => $supplierId,
+                'quantity' => $basequantity,
+                'type' => 'IN',
+                'remarks' => $remarks
+            ]);
 
-        return $stockMovement;
+
+            DB::commit();
+            return $stockMovement;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
-
     /**
      * Deduct stock from a location
      */
     public function deductStock($productId, $locationId, $quantity, $unitType, $supplierId = null, $remarks = null)
     {
-        $locationProduct = LocationProduct::where('unit_id', $unitType)->where('location_id', $locationId)->first();
-        $productunit = ProductUnit::where('id', $unitType)->first();
-        $basequantity = $productunit->convertToBaseUnits($quantity);
+        $unit = ProductUnit::where('product_id', $productId)->where('name', $unitType)->first();
+        $locationProduct = LocationProduct::where('unit_id', $unit->id)->where('location_id', $locationId)->first();
+        $basequantity = $unit->convertToBaseUnits($quantity);
         $locationProduct->quantity = $locationProduct->quantity - $basequantity;
         $locationProduct->save();
 
         // Record movement
         $stockMovement = StockMovement::create([
             'product_id' => $productId,
-            'product_unit_id' => $unitType,
+            'product_unit_id' => $unit->id,
             'from_location_id' => $locationId,
             'to_location_id' => null,
             'supplier_id' => $supplierId,
@@ -69,15 +86,15 @@ class StockService
     {
         DB::beginTransaction();
         try {
-            $fromlocationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $fromLocationId)->first();
-            $tolocationProduct = LocationProduct::where('product_id', $productId)->where('location_id', $toLocationId)->first();
+            $unit = ProductUnit::where('product_id', $productId)->where('name', $unitType)->first();
+            $fromlocationProduct = LocationProduct::where('unit_id', $unit->id)->where('location_id', $fromLocationId)->first();
+            $tolocationProduct = LocationProduct::where('unit_id', $unit->id)->where('location_id', $toLocationId)->first();
             if ($fromlocationProduct == null || $tolocationProduct == null) {
                 throw new \Exception('No stock of that product in that location');
             }
 
 
-            $productunit = ProductUnit::where('id', $unitType)->first();
-            $basequantity = $productunit->convertToBaseUnits($quantity);
+            $basequantity = $unit->convertToBaseUnits($quantity);
             if ($fromlocationProduct->quantity < $basequantity) {
                 throw new \Exception('Insufficient stock in that location. Only left - ' . $fromlocationProduct->quantity);
             }
@@ -88,13 +105,12 @@ class StockService
             // Record movement
             $stockMovement = StockMovement::create([
                 'product_id' => $productId,
-                'product_unit_id' => $unitType,
+                'product_unit_id' => $unit->id,
                 'from_location_id' => $fromLocationId,
                 'to_location_id' => $toLocationId,
                 'supplier_id' => $supplierId,
                 'quantity' => $basequantity,
                 'type' => 'TRANSFER',
-                'remarks' => $remarks
             ]);
             DB::commit();
             return $stockMovement;

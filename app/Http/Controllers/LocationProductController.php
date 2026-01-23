@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LocationProduct;
+use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
@@ -26,10 +28,24 @@ class LocationProductController extends Controller
         return $this->apiSuccess('Location Product created successfully', LocationProduct::create($validated));
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $location = LocationProduct::where('location_id', $id)->get();
-        return $this->apiSuccess('Location Products', $location);
+        $locationProduct = LocationProduct::find($id);
+        if ($locationProduct) {
+            $search = $request->input('search');
+            $per_page = $request->input('per_page', 10);
+            $query = Product::with('name');
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            }
+            $collection = LocationProduct::collection($query->where('location_id', $id)->paginate($per_page));
+            if ($collection->isEmpty()) {
+                return $this->apiError("No product found in this category");
+            }
+            return $this->apiSuccessPaginated("Category found successfully", $collection);
+        } else {
+            return $this->apiError("Category not found");
+        }
     }
 
     public function update(Request $request, LocationProduct $locationProduct)
@@ -73,12 +89,54 @@ class LocationProductController extends Controller
         return $this->apiSuccess('Stock Level', $data);
     }
 
-    public function getStockByProduct($productId)
+    public function stockLevelByProduct($id)
     {
-        $locationProducts = LocationProduct::where('product_id', $productId)->get();
+        $units = ProductUnit::where('product_id', $id)->get();
         $stock = 0;
-        foreach ($locationProducts as $locationProduct) {
-            $stock += $locationProduct->quantity;
+        foreach ($units as $unit) {
+            $locationProducts = LocationProduct::where('unit_id', $unit->id)->get();
+
+            foreach ($locationProducts as $locationProduct) {
+                $stock += $locationProduct->quantity;
+            }
+        }
+        $data = [
+            'stock' => $stock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
+
+    public function stockLevelByCategory($id)
+    {
+        $products = Product::where('category_id', $id)->get();
+        $stock = 0;
+        foreach ($products as $product) {
+            $units = ProductUnit::where('product_id', $product->id)->get();
+            foreach ($units as $unit) {
+                $locationProducts = LocationProduct::where('unit_id', $unit->id)->get();
+                foreach ($locationProducts as $locationProduct) {
+                    $stock += $locationProduct->quantity;
+                }
+            }
+        }
+        $data = [
+            'stock' => $stock
+        ];
+        return $this->apiSuccess('Stock Level', $data);
+    }
+
+    public function stockLevelByBrand($id)
+    {
+        $products = Product::where('brand_id', $id)->get();
+        $stock = 0;
+        foreach ($products as $product) {
+            $units = ProductUnit::where('product_id', $product->id)->get();
+            foreach ($units as $unit) {
+                $locationProducts = LocationProduct::where('unit_id', $unit->id)->get();
+                foreach ($locationProducts as $locationProduct) {
+                    $stock += $locationProduct->quantity;
+                }
+            }
         }
         $data = [
             'stock' => $stock

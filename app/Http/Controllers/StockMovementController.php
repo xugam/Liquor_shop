@@ -23,11 +23,12 @@ class StockMovementController extends Controller
     {
 
         $validated = $request->validated();
+        //   return $validated;
         $stockMovement = $this->stockService->addStock(
             $validated['product_id'],
             $validated['location_id'],
             $validated['quantity'],
-            $validated['unit_id'],
+            $validated['unit_type'],
             $validated['supplier_id'] ?? null,
             $validated['remarks'] ?? null
         );
@@ -45,12 +46,14 @@ class StockMovementController extends Controller
         if ($validated['from_location_id'] == $validated['to_location_id']) {
             return $this->apiError('From and to location cannot be same', 400);
         }
+        // return $validated;
         $stockMovement = $this->stockService->transferStock(
             $validated['product_id'],
             $validated['from_location_id'],
             $validated['to_location_id'],
             $validated['quantity'],
-            $validated['unit_id'],
+            $validated['unit_type'],
+            $validated['supplier_id'] ?? null,
             $validated['remarks'] ?? null
         );
 
@@ -70,7 +73,7 @@ class StockMovementController extends Controller
             $validated['product_id'],
             $validated['location_id'],
             $validated['quantity'],
-            $validated['unit_id'],
+            $validated['unit_type'],
             $validated['supplier_id'] ?? null,
             $validated['remarks'] ?? null
         );

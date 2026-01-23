@@ -26,7 +26,8 @@ class TransferStockRequest extends FormRequest
             'from_location_id' => 'required|exists:locations,id',
             'to_location_id' => 'required|exists:locations,id',
             'quantity' => 'required|numeric|min:1',
-            'unit_id' => 'required|exists:product_units,id', // Bottle/Carton/Pack
+            'unit_type' => 'required|exists:product_units,name', // Bottle/Carton/Pack
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'remarks' => 'nullable|string',
         ];
     }

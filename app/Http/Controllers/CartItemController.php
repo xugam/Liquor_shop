@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CartItemResource;
 use App\Models\CartItem;
 use App\Traits\PaginationTrait;
 use App\Traits\ResponseTrait;
@@ -11,32 +12,42 @@ class CartItemController extends Controller
 {
     use ResponseTrait;
     use PaginationTrait;
-    public function index()
+    public function index(Request $request)
     {
-        $cartItems = CartItem::all();
-        return $this->apiSuccess('Cart Items', $cartItems);
+        $user = auth()->user();
+        $cartItems = CartItem::where('user_id', $user->id)->get();
+        // return $cartItems;
+        $data = CartItemResource::collection($cartItems);
+        return $this->apiSuccess('Cart Items', $data);
     }
 
     public function store(Request $request)
     {
         $user = auth()->user();
-        return $user;
         $validated = $request->validate([
-            'product_id' => 'required|array|min:1'
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|numeric|min:1',
 
         ]);
-        foreach ($validated['product_id'] as $product_id) {
-            CartItem::create([
+        $cartItem = CartItem::where('user_id', $user->id)->where('product_id', $validated['product_id'])->first();
+        if ($cartItem) {
+            $cartItem->quantity += $validated['quantity'];
+            $cartItem->save();
+            return $this->apiSuccess('Cart Item updated successfully', $cartItem);
+        } else {
+            $data = CartItem::create([
                 'user_id' => $user->id,
-                'product_id' => $product_id,
+                'quantity' => $validated['quantity'],
+                'product_id' => $validated['product_id'],
             ]);
+            return $this->apiSuccess('Cart Item added successfully', $data);
         }
-
-        return $this->apiSuccess('Cart Item added successfully');
     }
 
     public function destroy(CartItem $cartItem)
     {
+        $user = auth()->user();
+        $cartItem = CartItem::where('user_id', $user->id)->where('product_id', $cartItem->product_id)->first();
         $cartItem->delete();
         return $this->apiSuccess('Cart Item removed successfully');
     }

@@ -74,12 +74,16 @@ Route::get('stock/movements/{type}', [StockMovementController::class, 'movement'
 //Stocks Management
 Route::apiResource('location-products', LocationProductController::class);
 Route::get('stock-level', [LocationProductController::class, 'stockLevel']);
-Route::get('stock-level/{location}', [LocationProductController::class, 'stockLevelByLocation']);
-Route::get('stock-level/{product}', [LocationProductController::class, 'stockLevelByProduct']);
+Route::get('stock-levelbyLocation/{location}', [LocationProductController::class, 'stockLevelByLocation']);
+Route::get('stock-levelbyProduct/{id}', [LocationProductController::class, 'stockLevelByProduct']);
+Route::get('stock-levelbyCategory/{id}', [LocationProductController::class, 'stockLevelByCategory']);
+Route::get('stock-levelbyBrand/{id}', [LocationProductController::class, 'stockLevelByBrand']);
+
 
 //Cart
 Route::apiResource('cart', CartItemController::class)->middleware('auth:sanctum');
-
+Route::get('cart', [CartItemController::class, 'index'])->middleware('auth:sanctum');
+Route::delete('cart/{cartItem}', [CartItemController::class, 'destroy'])->middleware('auth:sanctum');
 //Cheques
 Route::get('cheques', [ChequeController::class, 'index']);
 Route::post('cheques', [ChequeController::class, 'store']);
@@ -87,10 +91,10 @@ Route::patch('cheques/{cheque}', [ChequeController::class, 'update']);
 Route::get('cheques/pending', [ChequeController::class, 'pendingCheques']);
 //});
 
-Route::middleware('auth:sanctum', 'role:admin', 'verified.api')->group(function () {
-    Route::apiResource('sales', SaleController::class);
-    Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
-});
+//Route::middleware('auth:sanctum', 'role:admin', 'verified.api')->group(function () {
+Route::apiResource('sales', SaleController::class);
+Route::delete('sales/cancel/{sale}', [SaleController::class, 'cancel']);
+//});
 
 
 //Admin Only 
